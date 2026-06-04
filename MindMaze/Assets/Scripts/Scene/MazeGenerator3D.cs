@@ -39,6 +39,21 @@ public class MazeGenerator3D : MonoBehaviour
     public bool openEntry = true;
     public bool openExit = true;
 
+    [Header("起点 / 终点房间")]
+    [Tooltip("起点房间预制体（放置在迷宫外，通过入口连通）")]
+    public GameObject startRoomPrefab;
+    [Tooltip("终点房间预制体（放置在迷宫外，通过出口连通）")]
+    public GameObject endRoomPrefab;
+    [Tooltip("房间与迷宫边界的距离（单位：格子数），用于微调房间位置")]
+    public float roomPlacementOffset = 0f;
+
+    [Header("起点 / 终点可视化标记")]
+    [Tooltip("起点处放置的标记预制体（如旗帜、光柱等）")]
+    public GameObject startMarkerPrefab;
+    [Tooltip("终点处放置的标记预制体")]
+    public GameObject endMarkerPrefab;
+    public float markerYOffset = 2f;
+
     [Header("安全锁控门")]
     [Tooltip("放置在通道上的门预制体")]
     public GameObject doorPrefab;
@@ -129,6 +144,9 @@ public class MazeGenerator3D : MonoBehaviour
         BuildGeometry();
         PlaceDoors();
         PlaceSmoke();
+        PlaceStartRoom();
+        PlaceEndRoom();
+        PlaceMarkers();
         PlaceDecorations(roomDecorations, "房间类");
         PlaceDecorations(objectDecorations, "物体类");
         PlaceCeilingLights();
@@ -277,6 +295,51 @@ public class MazeGenerator3D : MonoBehaviour
             3 => new Vector3(cx - halfCell, wallHeight * 0.5f, cz),
             _ => Vector3.zero
         };
+    }
+
+    // ==================== 起点 / 终点房间 ====================
+
+    private void PlaceStartRoom()
+    {
+        if (startRoomPrefab == null) return;
+
+        Vector3 startWorld = GetCellWorldPos(startCell.x, startCell.y);
+        Vector3 roomPos = startWorld + new Vector3(-cellSize - roomPlacementOffset, 0f, 0f);
+
+        var go = Instantiate(startRoomPrefab, roomPos, Quaternion.identity, transform);
+        go.name = "StartRoom";
+        Debug.Log($"起点房间已放置在 {startCell} 左侧");
+    }
+
+    private void PlaceEndRoom()
+    {
+        if (endRoomPrefab == null) return;
+
+        Vector3 endWorld = GetCellWorldPos(endCell.x, endCell.y);
+        Vector3 roomPos = endWorld + new Vector3(cellSize + roomPlacementOffset, 0f, 0f);
+
+        var go = Instantiate(endRoomPrefab, roomPos, Quaternion.identity, transform);
+        go.name = "EndRoom";
+        Debug.Log($"终点房间已放置在 {endCell} 右侧");
+    }
+
+    private void PlaceMarkers()
+    {
+        if (startMarkerPrefab != null)
+        {
+            Vector3 pos = GetCellWorldPos(startCell.x, startCell.y);
+            pos.y = markerYOffset;
+            var m = Instantiate(startMarkerPrefab, pos, Quaternion.identity, transform);
+            m.name = "StartMarker";
+        }
+
+        if (endMarkerPrefab != null)
+        {
+            Vector3 pos = GetCellWorldPos(endCell.x, endCell.y);
+            pos.y = markerYOffset;
+            var m = Instantiate(endMarkerPrefab, pos, Quaternion.identity, transform);
+            m.name = "EndMarker";
+        }
     }
 
     // ==================== 装饰物生成 ====================
