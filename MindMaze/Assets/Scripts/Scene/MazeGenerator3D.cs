@@ -16,6 +16,8 @@ public class MazeGenerator3D : MonoBehaviour
     public float cellSize = 4f;
     public float wallHeight = 3f;
     public float wallThickness = 0.3f;
+    [Tooltip("预制体的基础边长（单位：世界单位）。如果你的预制体默认不是 1x1x1，设置为它的实际边长，代码会自动换算缩放比。")]
+    public float prefabUnitSize = 1f;
 
     [Header("起点 / 终点")]
     [Tooltip("迷宫起点格子坐标")]
@@ -52,8 +54,16 @@ public class MazeGenerator3D : MonoBehaviour
     public List<DecorationEntry> roomDecorations = new();
 
     [Header("物体类装饰（可自由增删）")]
-    [Tooltip("如：储水罐、箱子、灯具等，Inspector 中可增减条目")]
+    [Tooltip("如：储水罐、箱子等，Inspector 中可增减条目")]
     public List<DecorationEntry> objectDecorations = new();
+
+    [Header("天花板灯光（可自由增删）")]
+    [Tooltip("放置在天花板上的灯光预制体，自动翻转向下")]
+    public List<DecorationEntry> ceilingLightDecorations = new();
+
+    [Header("墙壁灯光（可自由增删）")]
+    [Tooltip("放置在墙壁上的灯光预制体，随机选墙并自动朝内")]
+    public List<DecorationEntry> wallLightDecorations = new();
 
     [Header("调试寻路")]
     [Tooltip("启用后自动生成小球从起点走到终点")]
@@ -121,6 +131,8 @@ public class MazeGenerator3D : MonoBehaviour
         PlaceSmoke();
         PlaceDecorations(roomDecorations, "房间类");
         PlaceDecorations(objectDecorations, "物体类");
+        PlaceCeilingLights();
+        PlaceWallLights();
 
         if (enableDebugNavigation && debugBallPrefab != null)
             StartCoroutine(DebugNavigate());
@@ -204,7 +216,7 @@ public class MazeGenerator3D : MonoBehaviour
         if (prefab == null) return;
 
         var wall = Instantiate(prefab, pos, Quaternion.identity, transform);
-        wall.transform.localScale = scale;
+        wall.transform.localScale = scale / prefabUnitSize;
     }
 
     private void CreateFloor(float cx, float cz)
@@ -213,7 +225,7 @@ public class MazeGenerator3D : MonoBehaviour
         if (prefab == null) return;
 
         var f = Instantiate(prefab, new Vector3(cx, 0f, cz), Quaternion.identity, transform);
-        f.transform.localScale = new Vector3(cellSize, 0.1f, cellSize);
+        f.transform.localScale = new Vector3(cellSize, 0.1f, cellSize) / prefabUnitSize;
     }
 
     private void CreateCeiling(float cx, float topY, float cz)
@@ -222,7 +234,7 @@ public class MazeGenerator3D : MonoBehaviour
         if (prefab == null) return;
 
         var c = Instantiate(prefab, new Vector3(cx, topY, cz), Quaternion.identity, transform);
-        c.transform.localScale = new Vector3(cellSize, 0.1f, cellSize);
+        c.transform.localScale = new Vector3(cellSize, 0.1f, cellSize) / prefabUnitSize;
     }
 
     // ==================== 门 & 烟雾 ====================
@@ -294,9 +306,13 @@ public class MazeGenerator3D : MonoBehaviour
                         Random.Range(-1f, 1f) * cellSize * entry.randomOffset
                     );
 
-                    var go = Instantiate(entry.prefab, basePos + offset, Quaternion.identity, transform);
-                    if (entry.randomYRotation)
-                        go.transform.rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+                    Quaternion rot = entry.randomYRotation
+                        ? Quaternion.Euler(0f, Random.Range(0f, 360f), 0f)
+                        : Quaternion.identity;
+
+                    var go = Instantiate(entry.prefab, basePos + offset, rot, transform);
+                    if (entry.uniformScale > 0f)
+                        go.transform.localScale = Vector3.one * (entry.uniformScale / prefabUnitSize);
 
                     count++;
                 }
@@ -305,6 +321,93 @@ public class MazeGenerator3D : MonoBehaviour
 
         if (count > 0)
             Debug.Log($"已生成{categoryName}装饰: {count} 个");
+    }
+
+    // ==================== 灯光生成 ====================
+
+    private void PlaceCeilingLights()
+    {
+        if (ceilingLightDecorations == null || ceilingLightDecorations.Count == 0) return;
+
+        int count = 0;
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (!cells[x, y].visited) continue;
+                if ((x == startCell.x && y == startCell.y) || (x == endCell.x && y == endCell.y)) continue;
+
+                foreach (var entry in ceilingLightDecorations)
+                {
+                    if (entry.prefab == null) continue;
+                    if (Random.value > entry.spawnChance) continue;
+
+                    Vector3 basePos = GetCellWorldPos(x, y);
+                    Vector3 offset = new(
+                        Random.Range(-1f, 1f) * cellSize * entry.randomOffset,
+                        0f,
+                        Random.Range(-1f, 1f) * cellSize * entry.randomOffset
+                    );
+
+                    Vector3 pos = new Vector3(basePos.x + offset.x, wallHeight * 0.98f, basePos.z + offset.z);
+                    Quaternion rot = Quaternion.Euler(
+                        180f,
+                        entry.randomYRotation ? Random.Range(0f, 360f) : 0f,
+                        0f
+                    );
+
+                    var go = Instantiate(entry.prefab, pos, rot, transform);
+                    if (entry.uniformScale > 0f)
+                        go.transform.localScale = Vector3.one * (entry.uniformScale / prefabUnitSize);
+
+                    count++;
+                }
+            }
+        }
+
+        if (count > 0) Debug.Log($"已生成天花板灯光: {count} 个");
+    }
+
+    private void PlaceWallLights()
+    {
+        if (wallLightDecorations == null || wallLightDecorations.Count == 0) return;
+
+        int count = 0;
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (!cells[x, y].visited) continue;
+                if ((x == startCell.x && y == startCell.y) || (x == endCell.x && y == endCell.y)) continue;
+
+                foreach (var entry in wallLightDecorations)
+                {
+                    if (entry.prefab == null) continue;
+                    if (Random.value > entry.spawnChance) continue;
+
+                    int wallDir = Random.Range(0, 4);
+                    Vector3 wallPos = GetPassageWorldPos(x, y, wallDir);
+                    float along = Random.Range(-cellSize * 0.4f, cellSize * 0.4f);
+
+                    Vector3 pos = wallDir == 0 || wallDir == 2
+                        ? new Vector3(wallPos.x + along, wallHeight * 0.5f, wallPos.z)
+                        : new Vector3(wallPos.x, wallHeight * 0.5f, wallPos.z + along);
+
+                    float yAngle = wallDir switch { 0 => 180f, 1 => 270f, 2 => 0f, 3 => 90f, _ => 0f };
+                    Quaternion rot = Quaternion.Euler(0f, yAngle, 0f);
+
+                    var go = Instantiate(entry.prefab, pos, rot, transform);
+                    if (entry.uniformScale > 0f)
+                        go.transform.localScale = Vector3.one * (entry.uniformScale / prefabUnitSize);
+
+                    count++;
+                }
+            }
+        }
+
+        if (count > 0) Debug.Log($"已生成墙壁灯光: {count} 个");
     }
 
     // ==================== 寻路 & 移动接口 ====================
@@ -495,6 +598,14 @@ public class MazeGenerator3D : MonoBehaviour
         return new((x + 0.5f) * cellSize, 0f, (y + 0.5f) * cellSize);
     }
 
+    /// <summary> 将世界坐标反查为迷宫格子坐标（自动钳制到有效范围） </summary>
+    public Vector2Int GetCellFromWorldPos(Vector3 worldPos)
+    {
+        int x = Mathf.Clamp(Mathf.FloorToInt(worldPos.x / cellSize), 0, width - 1);
+        int y = Mathf.Clamp(Mathf.FloorToInt(worldPos.z / cellSize), 0, height - 1);
+        return new Vector2Int(x, y);
+    }
+
     /// <summary> 查询某个格子是否已被访问（走廊） </summary>
     public bool IsCellVisited(int x, int y)
     {
@@ -514,7 +625,7 @@ public class MazeGenerator3D : MonoBehaviour
 // ==================== 装饰物配置 ====================
 
 /// <summary>
-/// 装饰物条目 —— 房间类/物体类通用。
+/// 装饰物条目 —— 房间类/物体类/灯光通用。
 /// Inspector 中可自由增删，每项指定预制体、生成概率、随机偏移。
 /// </summary>
 [System.Serializable]
@@ -529,6 +640,9 @@ public class DecorationEntry
     [Range(0f, 0.5f), Tooltip("在格子内的随机偏移幅度")]
     public float randomOffset = 0.3f;
 
-    [Tooltip("是否随机 Y 轴旋转")]
+    [Tooltip("统一缩放倍数（相对于 prefabUnitSize）。0 表示使用预制体原始大小")]
+    public float uniformScale = 1f;
+
+    [Tooltip("是否随机 Y 轴旋转（灯光类会自动修正朝向后再随机）")]
     public bool randomYRotation = true;
 }
