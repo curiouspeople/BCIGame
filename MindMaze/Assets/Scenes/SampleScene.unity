@@ -279,7 +279,7 @@ MonoBehaviour:
   m_UpdateMethod: 2
   m_BlendUpdateMethod: 1
   m_DefaultBlend:
-    m_Style: 1
+    m_Style: 0
     m_Time: 2
     m_CustomCurve:
       serializedVersion: 2
@@ -488,7 +488,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!108 &410087040
 Light:
   m_ObjectHideFlags: 0
@@ -1540,8 +1540,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7539ca094ea3e1a428865296d3124eb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 5
-  height: 5
+  width: 20
+  height: 20
   cellSize: 4
   wallHeight: 3
   wallThickness: 0.28
@@ -1550,7 +1550,7 @@ MonoBehaviour:
   ceilingPlaneUnitSize: 4
   ceilingFacesDown: 1
   startCell: {x: 0, y: 0}
-  endCell: {x: 4, y: 4}
+  endCell: {x: 19, y: 19}
   wallPrefabs:
   - {fileID: 764864150}
   borderWallPrefabs:
@@ -1572,7 +1572,7 @@ MonoBehaviour:
   smokePrefab: {fileID: 0}
   smokeChance: 0.15
   roomDecorations:
-  - prefab: {fileID: 199510, guid: 84db40318ac45024d9fa7abc90cc760e, type: 3}
+  - prefab: {fileID: 151418, guid: b1f21fa6ba32fab41bb5409a686c931c, type: 3}
     spawnChance: 0.04
     randomOffset: 0
     uniformScale: 0.1
