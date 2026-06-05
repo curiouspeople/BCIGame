@@ -16,8 +16,14 @@ public class MazeGenerator3D : MonoBehaviour
     public float cellSize = 4f;
     public float wallHeight = 3f;
     public float wallThickness = 0.3f;
-    [Tooltip("预制体的基础边长（单位：世界单位）。如果你的预制体默认不是 1x1x1，设置为它的实际边长，代码会自动换算缩放比。")]
+    [Tooltip("墙体 / 装饰物预制体的基础边长。设为你墙体预制体的实际边长。")]
     public float prefabUnitSize = 1f;
+    [Tooltip("地板面片的原始边长（单位：世界单位）。设为 0 则按 3D 模型处理。Unity Plane=10，Quad=1。")]
+    public float floorPlaneUnitSize = 10f;
+    [Tooltip("天花板面片的原始边长。设为 0 则按 3D 模型处理。")]
+    public float ceilingPlaneUnitSize = 10f;
+    [Tooltip("天花板面片是否默认朝下。勾选则不额外旋转。")]
+    public bool ceilingFacesDown = true;
 
     [Header("起点 / 终点")]
     [Tooltip("迷宫起点格子坐标")]
@@ -28,6 +34,9 @@ public class MazeGenerator3D : MonoBehaviour
     [Header("墙体预制体（随机选取）")]
     [Tooltip("可拖入多种墙体，生成时随机选择")]
     public GameObject[] wallPrefabs;
+    [Header("边界墙体预制体（随机选取）")]
+    [Tooltip("迷宫外边缘围墙的预制体，单独设置材质。空则沿用 Wall Prefabs")]
+    public GameObject[] borderWallPrefabs;
     [Header("地板预制体（随机选取）")]
     [Tooltip("可拖入多种地板，生成时随机选择")]
     public GameObject[] floorPrefabs;
@@ -93,6 +102,7 @@ public class MazeGenerator3D : MonoBehaviour
     private readonly Vector2Int[] dirs = { new(0, 1), new(1, 0), new(0, -1), new(-1, 0) };
     private readonly HashSet<(int x, int y, int dir)> placedWalls = new();
     private readonly List<(int x, int y, int dir)> passages = new();
+    private Dictionary<GameObject, Vector3> _meshSizeCache = new();
 
     private void Start() => Generate();
 
@@ -200,6 +210,9 @@ public class MazeGenerator3D : MonoBehaviour
         float hw = wallHeight * 0.5f;
         placedWalls.Clear();
 
+        // 外围围墙（正方体）
+        BuildBoundaryWalls(hw);
+
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -213,29 +226,99 @@ public class MazeGenerator3D : MonoBehaviour
                 CreateFloor(cx, cz);
                 if (HasAny(ceilingPrefabs)) CreateCeiling(cx, hw * 2f, cz);
 
-                if (c.right) PlaceWall(x, y, 1, new Vector3((x + 1) * cellSize, hw, cz),
-                                       new Vector3(wallThickness, wallHeight, cellSize));
-                if (c.top)   PlaceWall(x, y, 0, new Vector3(cx, hw, (y + 1) * cellSize),
-                                       new Vector3(cellSize, wallHeight, wallThickness));
-                if (x == 0 && c.left)   PlaceWall(x, y, 3, new Vector3(0, hw, cz),
-                                                new Vector3(wallThickness, wallHeight, cellSize));
-                if (y == 0 && c.bottom) PlaceWall(x, y, 2, new Vector3(cx, hw, 0),
-                                                new Vector3(cellSize, wallHeight, wallThickness));
+                // 内部右墙（跳过最右列，围墙已处理）
+                if (c.right && x < width - 1)
+                    PlaceInteriorWall(x, y, 1,
+                        new Vector3((x + 1) * cellSize, hw, cz),
+                        new Vector3(wallThickness, wallHeight, cellSize));
+
+                // 内部顶墙（跳过最顶行，围墙已处理）
+                if (c.top && y < height - 1)
+                    PlaceInteriorWall(x, y, 0,
+                        new Vector3(cx, hw, (y + 1) * cellSize),
+                        new Vector3(cellSize, wallHeight, wallThickness));
             }
         }
     }
 
-    private void PlaceWall(int x, int y, int dir, Vector3 pos, Vector3 scale)
+    // ---- 围墙（正方体）----
+
+    private void BuildBoundaryWalls(float hw)
     {
-        if (placedWalls.Contains((x, y, dir))) return;
-        placedWalls.Add((x, y, dir));
+        if (!HasAny(borderWallPrefabs) && !HasAny(wallPrefabs)) return;
+
+        // 左墙  底墙  右墙  顶墙
+        // dir:   3     2     1     0   (对应格子的 wall flag 方向检查)
+        BuildBoundarySide(0,              height,  hw, true,  3);
+        BuildBoundarySide(width * cellSize, height,  hw, true,  1);
+        BuildBoundarySide(0,              width,   hw, false, 2);
+        BuildBoundarySide(height * cellSize, width,  hw, false, 0);
+    }
+
+    private void BuildBoundarySide(float edgeCoord, int cellCount, float hw, bool alongZ, int dir)
+    {
+        var pool = HasAny(borderWallPrefabs) ? borderWallPrefabs : wallPrefabs;
+        var prefab = PickRandom(pool);
+        if (prefab == null) return;
+
+        Vector3 meshSize = GetMeshSize(prefab);
+
+        for (int i = 0; i < cellCount; i++)
+        {
+            int gx = alongZ ? 0 : i;
+            int gy = alongZ ? i : 0;
+
+            //if ((gx == startCell.x && gy == startCell.y && openEntry) ||
+            //    (gx == endCell.x && gy == endCell.y && openExit))
+            //    continue;
+
+            //if (dir == 0 && !cells[gx, gy].top) continue;
+            //if (dir == 1 && !cells[gx, gy].right) continue;
+            //if (dir == 2 && !cells[gx, gy].bottom) continue;
+            //if (dir == 3 && !cells[gx, gy].left) continue;
+
+            //var key = (gx, gy, dir);
+            //if (placedWalls.Contains(key)) continue;
+            //placedWalls.Add(key);
+
+            float cx = (gx + 0.5f) * cellSize;
+            float cz = (gy + 0.5f) * cellSize;
+
+            Vector3 pos;
+            Vector3 targetSize;
+            if (alongZ)
+            {
+                pos = new Vector3(edgeCoord, hw, cz);
+                targetSize = new Vector3(wallThickness, wallHeight, cellSize);
+            }
+            else
+            {
+                pos = new Vector3(cx, hw, edgeCoord);
+                targetSize = new Vector3(cellSize, wallHeight, wallThickness);
+            }
+
+            var wall = Instantiate(prefab, pos, Quaternion.identity, transform);
+            wall.transform.localScale = SafeDivide(targetSize, meshSize);
+        }
+    }
+
+    // ---- 内部墙（长方体）----
+
+    private void PlaceInteriorWall(int x, int y, int dir, Vector3 pos, Vector3 targetSize)
+    {
+        var key = (x, y, dir);
+        if (placedWalls.Contains(key)) return;
+        placedWalls.Add(key);
 
         var prefab = PickRandom(wallPrefabs);
         if (prefab == null) return;
 
+        Vector3 meshSize = GetMeshSize(prefab);
         var wall = Instantiate(prefab, pos, Quaternion.identity, transform);
-        wall.transform.localScale = scale / prefabUnitSize;
+        wall.transform.localScale = SafeDivide(targetSize, meshSize);
     }
+
+    // ---- 地板 / 天花板 ----
 
     private void CreateFloor(float cx, float cz)
     {
@@ -243,7 +326,13 @@ public class MazeGenerator3D : MonoBehaviour
         if (prefab == null) return;
 
         var f = Instantiate(prefab, new Vector3(cx, 0f, cz), Quaternion.identity, transform);
-        f.transform.localScale = new Vector3(cellSize, 0.1f, cellSize) / prefabUnitSize;
+        if (floorPlaneUnitSize > 0f)
+            f.transform.localScale = new Vector3(cellSize / floorPlaneUnitSize, 1f, cellSize / floorPlaneUnitSize);
+        else
+        {
+            Vector3 ms = GetMeshSize(prefab);
+            f.transform.localScale = new Vector3(cellSize / ms.x, 0.1f / ms.y, cellSize / ms.z);
+        }
     }
 
     private void CreateCeiling(float cx, float topY, float cz)
@@ -251,8 +340,50 @@ public class MazeGenerator3D : MonoBehaviour
         var prefab = PickRandom(ceilingPrefabs);
         if (prefab == null) return;
 
-        var c = Instantiate(prefab, new Vector3(cx, topY, cz), Quaternion.identity, transform);
-        c.transform.localScale = new Vector3(cellSize, 0.1f, cellSize) / prefabUnitSize;
+        Quaternion rot = Quaternion.identity;
+        if (ceilingPlaneUnitSize > 0f && !ceilingFacesDown)
+            rot = Quaternion.Euler(180, 0, 0);
+
+        var obj = Instantiate(prefab, new Vector3(cx, topY, cz), rot, transform);
+        if (ceilingPlaneUnitSize > 0f)
+            obj.transform.localScale = new Vector3(cellSize / ceilingPlaneUnitSize, 1f, cellSize / ceilingPlaneUnitSize);
+        else
+        {
+            Vector3 ms = GetMeshSize(prefab);
+            obj.transform.localScale = new Vector3(cellSize / ms.x, 0.1f / ms.y, cellSize / ms.z);
+        }
+    }
+
+    // ---- 网格尺寸 ----
+
+    private Vector3 GetMeshSize(GameObject prefab)
+    {
+        if (_meshSizeCache.TryGetValue(prefab, out var s)) return s;
+        var mfs = prefab.GetComponentsInChildren<MeshFilter>();
+        if (mfs.Length == 0) { s = Vector3.one * prefabUnitSize; }
+        else
+        {
+            Bounds b = new Bounds();
+            bool first = true;
+            foreach (var mf in mfs)
+            {
+                var mb = mf.sharedMesh.bounds;
+                if (first) { b = mb; first = false; }
+                else b.Encapsulate(mb);
+            }
+            s = b.size;
+        }
+        _meshSizeCache[prefab] = s;
+        return s;
+    }
+
+    private static Vector3 SafeDivide(Vector3 a, Vector3 b)
+    {
+        return new Vector3(
+            b.x > 0.0001f ? a.x / b.x : 1f,
+            b.y > 0.0001f ? a.y / b.y : 1f,
+            b.z > 0.0001f ? a.z / b.z : 1f
+        );
     }
 
     // ==================== 门 & 烟雾 ====================
@@ -348,6 +479,8 @@ public class MazeGenerator3D : MonoBehaviour
     {
         if (entries == null || entries.Count == 0) return;
 
+        float halfCell = cellSize * 0.5f;
+        float halfThick = wallThickness * 0.5f;
         int count = 0;
 
         for (int x = 0; x < width; x++)
@@ -357,23 +490,33 @@ public class MazeGenerator3D : MonoBehaviour
                 if (!cells[x, y].visited) continue;
                 if ((x == startCell.x && y == startCell.y) || (x == endCell.x && y == endCell.y)) continue;
 
+                var c = cells[x, y];
+                float baseX = (x + 0.5f) * cellSize;
+                float baseZ = (y + 0.5f) * cellSize;
+
+                // 计算格子内可步行区域（避开墙壁）
+                float xMin = -halfCell + (c.left   ? wallThickness : halfThick);
+                float xMax =  halfCell - (c.right  ? wallThickness : halfThick);
+                float zMin = -halfCell + (c.bottom ? wallThickness : halfThick);
+                float zMax =  halfCell - (c.top    ? wallThickness : halfThick);
+
+                if (xMax <= xMin || zMax <= zMin) continue;
+
                 foreach (var entry in entries)
                 {
                     if (entry.prefab == null) continue;
                     if (Random.value > entry.spawnChance) continue;
 
-                    Vector3 basePos = GetCellWorldPos(x, y);
-                    Vector3 offset = new(
-                        Random.Range(-1f, 1f) * cellSize * entry.randomOffset,
-                        0f,
-                        Random.Range(-1f, 1f) * cellSize * entry.randomOffset
-                    );
+                    float f = Mathf.Clamp01(entry.randomOffset);
+                    float offX = Random.Range(xMin * f, xMax * f);
+                    float offZ = Random.Range(zMin * f, zMax * f);
+                    Vector3 pos = new Vector3(baseX + offX, 0f, baseZ + offZ);
 
                     Quaternion rot = entry.randomYRotation
                         ? Quaternion.Euler(0f, Random.Range(0f, 360f), 0f)
                         : Quaternion.identity;
 
-                    var go = Instantiate(entry.prefab, basePos + offset, rot, transform);
+                    var go = Instantiate(entry.prefab, pos, rot, transform);
                     if (entry.uniformScale > 0f)
                         go.transform.localScale = Vector3.one * (entry.uniformScale / prefabUnitSize);
 
@@ -623,6 +766,7 @@ public class MazeGenerator3D : MonoBehaviour
             else
                 DestroyImmediate(transform.GetChild(i).gameObject);
         }
+        _meshSizeCache.Clear();
     }
 
     private List<T> Shuffle<T>(T[] array)
