@@ -558,7 +558,7 @@ public class MazeGenerator3D : MonoBehaviour
 
                     Vector3 pos = new Vector3(basePos.x + offset.x, wallHeight * 0.98f, basePos.z + offset.z);
                     Quaternion rot = Quaternion.Euler(
-                        180f,
+                        90f,
                         entry.randomYRotation ? Random.Range(0f, 360f) : 0f,
                         0f
                     );
