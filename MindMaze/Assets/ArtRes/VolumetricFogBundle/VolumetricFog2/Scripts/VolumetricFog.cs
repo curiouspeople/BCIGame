@@ -1,4 +1,4 @@
-﻿//#define FOG_ROTATION
+﻿#define FOG_ROTATION
 
 //------------------------------------------------------------------------------------------------------------------
 // Volumetric Fog & Mist 2
@@ -15,12 +15,16 @@ namespace VolumetricFogAndMist2 {
     public delegate void OnUpdateMaterialPropertiesEvent (VolumetricFog fogVolume);
 
     public enum VolumetricFogFollowMode {
+        [InspectorName("Full XYZ 全轴跟随")]
         FullXYZ = 0,
+        [InspectorName("Restrict To XZ Plane 限制XZ平面")]
         RestrictToXZPlane = 1
     }
 
     public enum VolumetricFogUpdateMode {
+        [InspectorName("When Fog Volume Is Visible 雾体可见时")]
         WhenFogVolumeIsVisible = 1,
+        [InspectorName("When Camera Is Inside Area 相机在区域内时")]
         WhenCameraIsInsideArea = 2
     }
 
@@ -33,42 +37,42 @@ namespace VolumetricFogAndMist2 {
 
         public event OnUpdateMaterialPropertiesEvent OnUpdateMaterialProperties;
 
-        [Tooltip("Supports Unity native lights including point and spot lights.")]
+        [Tooltip("支持Unity原生光照，包括点光源和聚光灯。Supports Unity native lights including point and spot lights.")]
         public bool enableNativeLights;
-        [Tooltip("Multiplier to native lights intensity")]
+        [Tooltip("原生光照强度倍数。Multiplier to native lights intensity")]
         public float nativeLightsMultiplier = 1f;
-        [Tooltip("Enable fast point lights. This option is much faster than native lights. However, if you enable native lights, this option can't be enabled as point lights are already included in the native lights support.")]
+        [Tooltip("启用快速点光源。此选项比原生光照快得多。但如果启用了原生光照，此选项不可用，因为点光源已包含在原生光照支持中。Enable fast point lights. This option is much faster than native lights. However, if you enable native lights, this option can't be enabled as point lights are already included in the native lights support.")]
         public bool enablePointLights;
-        [Tooltip("Supports Adaptative Probe Volumes (Unity 2023.1+)")]
+        [Tooltip("支持自适应探针体积（Unity 2023.1+）。Supports Adaptative Probe Volumes (Unity 2023.1+)")]
         public bool enableAPV;
-        [Tooltip("Multiplier to native lights intensity")]
+        [Tooltip("APV强度倍数。Multiplier to native lights intensity")]
         public float apvIntensityMultiplier = 1f;
         public bool enableVoids;
-        [Tooltip("Makes this fog volume follow another object automatically")]
+        [Tooltip("使此雾体积自动跟随另一个对象。Makes this fog volume follow another object automatically")]
         public bool enableFollow;
         public Transform followTarget;
         public VolumetricFogFollowMode followMode = VolumetricFogFollowMode.RestrictToXZPlane;
         public bool followIncludeDistantFog;
         public Vector3 followOffset;
-        [Tooltip("Fades in/out fog effect when reference controller enters the fog volume.")]
+        [Tooltip("当参考控制器进入雾体积时淡入/淡出雾效果。Fades in/out fog effect when reference controller enters the fog volume.")]
         public bool enableFade;
-        [Tooltip("Fog volume blending starts when reference controller is within this fade distance to any volume border.")]
+        [Tooltip("当参考控制器距雾体边界在此距离内时，雾体开始混合。Fog volume blending starts when reference controller is within this fade distance to any volume border.")]
         public float fadeDistance = 1;
-        [Tooltip("If this option is disabled, the fog disappears when the reference controller exits the volume and appears when the controller enters the volume. Enable this option to fade out the fog volume when the controller enters the volume. ")]
+        [Tooltip("如果禁用此选项，当参考控制器离开体积时雾会消失，进入时出现。启用此选项则在控制器进入体积时淡出雾。If this option is disabled, the fog disappears when the reference controller exits the volume and appears when the controller enters the volume. Enable this option to fade out the fog volume when the controller enters the volume. ")]
         public bool fadeOut;
-        [Tooltip("The controller (player or camera) to check if enters the fog volume.")]
+        [Tooltip("用于检测是否进入雾体积的控制器（玩家或相机）。The controller (player or camera) to check if enters the fog volume.")]
         public Transform fadeController;
-        [Tooltip("Enable sub-volume blending.")]
+        [Tooltip("启用子体积混合。Enable sub-volume blending.")]
         public bool enableSubVolumes;
-        [Tooltip("Allowed subVolumes. If no subvolumes are specified, any subvolume entered by this controller will affect this fog volume.")]
+        [Tooltip("允许的子体积。如果不指定任何子体积，任何被此控制器进入的子体积都会影响此雾体积。Allowed subVolumes. If no subvolumes are specified, any subvolume entered by this controller will affect this fog volume.")]
         public List<VolumetricFogSubVolume> subVolumes;
-        [Tooltip("Customize how this fog volume data is updated and animated")]
+        [Tooltip("自定义此雾体积数据的更新和动画方式。Customize how this fog volume data is updated and animated")]
         public bool enableUpdateModeOptions;
         public VolumetricFogUpdateMode updateMode = VolumetricFogUpdateMode.WhenFogVolumeIsVisible;
-        [Tooltip("Camera used to compute visibility of this fog volume. If not set, the system will use the main camera.")]
+        [Tooltip("用于计算此雾体积可见性的相机。如未设置，系统将使用主相机。Camera used to compute visibility of this fog volume. If not set, the system will use the main camera.")]
         public Camera updateModeCamera;
         public Bounds updateModeBounds = new Bounds(Vector3.zero, Vector3.one * 100);
-        [Tooltip("Shows the fog volume boundary in Game View")]
+        [Tooltip("在Game视图中显示雾体积边界。Shows the fog volume boundary in Game View")]
         public bool showBoundary;
 
         [NonSerialized]
@@ -99,6 +103,7 @@ namespace VolumetricFogAndMist2 {
         Bounds cachedBounds;
 
         /// <summary>
+        /// 此属性将返回配置文件的实例化副本并从此后用于此体积雾。工作方式类似Unity的material vs sharedMaterial。
         /// This property will return an instanced copy of the profile and use it for this volumetric fog from now on. Works similarly to Unity's material vs sharedMaterial.
         /// </summary>
         public VolumetricFogProfile settings {
@@ -555,9 +560,9 @@ namespace VolumetricFogAndMist2 {
         }
 
         /// <summary>
-        /// Schedules an update of the fog properties at end of this frame
+        /// 安排在此帧结束时更新雾属性。Schedules an update of the fog properties at end of this frame
         /// </summary>
-        /// <param name="forceTerrainCaptureUpdate">In addition to apply any fog property change, perform a terrain heightmap capture (if Terrain Fit option is enabled)</param>
+        /// <param name="forceTerrainCaptureUpdate">除应用任何雾属性更改外，还执行地形高度图捕获（如果启用了Terrain Fit选项）。In addition to apply any fog property change, perform a terrain heightmap capture (if Terrain Fit option is enabled)</param>
         public void UpdateMaterialProperties (bool forceTerrainCaptureUpdate) {
 #if UNITY_EDITOR
             if (!Application.isPlaying && activeProfile != null) {
@@ -571,10 +576,10 @@ namespace VolumetricFogAndMist2 {
         }
 
         /// <summary>
-        /// Forces an immediate material update
+        /// 强制执行立即材质更新。Forces an immediate material update
         /// </summary>
-        /// <param name="skipTerrainCapture">Applies all fog properties changes but do not perform a terrain heightmap capture (if Terrain Fit option is enabled)</param>
-        /// <param name="forceTerrainCaptureUpdate">In addition to apply any fog property change, perform a terrain heightmap capture (if Terrain Fit option is enabled).</param>
+        /// <param name="skipTerrainCapture">应用所有雾属性更改但不执行地形高度图捕获（如果启用了Terrain Fit选项）。Applies all fog properties changes but do not perform a terrain heightmap capture (if Terrain Fit option is enabled)</param>
+        /// <param name="forceTerrainCaptureUpdate">除应用任何雾属性更改外，还执行地形高度图捕获（如果启用了Terrain Fit选项）。In addition to apply any fog property change, perform a terrain heightmap capture (if Terrain Fit option is enabled).</param>
         public void UpdateMaterialPropertiesNow (bool skipTerrainCapture = false, bool forceTerrainCaptureUpdate = false) {
 
             if (gameObject == null || !gameObject.activeInHierarchy) {
@@ -887,21 +892,21 @@ namespace VolumetricFogAndMist2 {
         }
 
         /// <summary>
-        /// Issues a refresh of the depth pre-pass alpha clipping renderers list
+        /// 刷新深度预通道Alpha裁剪渲染器列表。Issues a refresh of the depth pre-pass alpha clipping renderers list
         /// </summary>
         public static void FindAlphaClippingObjects () {
             DepthRenderPrePassFeature.DepthRenderPass.FindAlphaClippingRenderers();
         }
 
         /// <summary>
-        /// Adds a specific renderer to the alpha clipping objects managed by the semitransparent depth prepass option
+        /// 将特定渲染器添加到半透明深度预通道选项管理的Alpha裁剪对象中。Adds a specific renderer to the alpha clipping objects managed by the semitransparent depth prepass option
         /// </summary>
         public static void AddAlphaClippingObject (Renderer renderer) {
             DepthRenderPrePassFeature.DepthRenderPass.AddAlphaClippingObject(renderer);
         }
 
         /// <summary>
-        /// Removes a specific renderer to the alpha clipping objects managed by the semitransparent depth prepass option
+        /// 从半透明深度预通道选项管理的Alpha裁剪对象中移除特定渲染器。Removes a specific renderer to the alpha clipping objects managed by the semitransparent depth prepass option
         /// </summary>
         public static void RemoveAlphaClippingObject (Renderer renderer) {
             DepthRenderPrePassFeature.DepthRenderPass.RemoveAlphaClippingObject(renderer);

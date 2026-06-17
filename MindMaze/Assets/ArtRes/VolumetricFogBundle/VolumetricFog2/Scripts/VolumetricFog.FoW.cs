@@ -11,14 +11,19 @@ namespace VolumetricFogAndMist2 {
 
 
     public enum MaskTextureBrushMode {
+        [InspectorName("Add Fog 添加雾")]
         AddFog = 0,
+        [InspectorName("Remove Fog 移除雾")]
         RemoveFog = 1,
+        [InspectorName("Color Fog 彩色雾")]
         ColorFog = 2
     }
 
 
     public enum FoWUpdateMethod {
+        [InspectorName("MainThread 主线程")]
         MainThread,
+        [InspectorName("BackgroundThread 后台线程")]
         BackgroundThread
     }
 
@@ -33,7 +38,7 @@ namespace VolumetricFogAndMist2 {
         [FormerlySerializedAs("fogOfWarTextureSize")]
         [Range(32, 2048)] public int fogOfWarTextureWidth = 256;
         [Range(32, 2048)] public int fogOfWarTextureHeight;
-        [Tooltip("Delay before the fog alpha is restored. A value of 0 keeps the fog cleared forever.")]
+        [Tooltip("雾透明度恢复前的延迟。设为0表示永久保持清除。Delay before the fog alpha is restored. A value of 0 keeps the fog cleared forever.")]
         [Range(0, 100)] public float fogOfWarRestoreDelay;
         [Range(0, 25)] public float fogOfWarRestoreDuration = 2f;
         [Range(0, 1)] public float fogOfWarSmoothness = 1f;
@@ -162,7 +167,7 @@ namespace VolumetricFogAndMist2 {
         }
 
         /// <summary>
-        /// Reloads the current contents of the fog of war texture
+        /// 重新加载战争迷雾纹理的当前内容。Reloads the current contents of the fog of war texture
         /// </summary>
         public void ReloadFogOfWarTexture () {
             if (_fogOfWarTexture == null || profile == null) return;
@@ -223,7 +228,7 @@ namespace VolumetricFogAndMist2 {
         }
 
         /// <summary>
-        /// Updates fog of war transitions and uploads texture changes to GPU if required
+        /// 更新战争迷雾过渡并在需要时将纹理变更上传至GPU。Updates fog of war transitions and uploads texture changes to GPU if required
         /// </summary>
         public void UpdateFogOfWar (bool forceUpload = false) {
             if (!enableFogOfWar || _fogOfWarTexture == null)
@@ -330,60 +335,64 @@ namespace VolumetricFogAndMist2 {
         }
 
         /// <summary>
+        /// 在世界坐标位置改变战争迷雾的透明度值，创建一个从当前透明度到指定目标透明度的过渡。它会考虑FogOfWarCenter和FogOfWarSize。注意只使用x和z坐标，Y（垂直）坐标被忽略。
         /// Changes the alpha value of the fog of war at world position creating a transition from current alpha value to specified target alpha. It takes into account FogOfWarCenter and FogOfWarSize.
         /// Note that only x and z coordinates are used. Y (vertical) coordinate is ignored.
         /// </summary>
-        /// <param name="worldPosition">in world space coordinates.</param>
-        /// <param name="radius">radius of application in world units.</param>
-        /// <param name="fogNewAlpha">target alpha value.</param>
-        /// <param name="duration">duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
+        /// <param name="worldPosition">世界空间坐标。in world space coordinates.</param>
+        /// <param name="radius">应用半径（世界单位）。radius of application in world units.</param>
+        /// <param name="fogNewAlpha">目标透明度值。target alpha value.</param>
+        /// <param name="duration">过渡持续时间（秒），0表示立即应用。duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
         public void SetFogOfWarAlpha (Vector3 worldPosition, float radius, float fogNewAlpha, float duration = 0) {
             SetFogOfWarAlpha(worldPosition, radius, fogNewAlpha, true, duration, fogOfWarSmoothness, fogOfWarRestoreDelay, fogOfWarRestoreDuration);
         }
 
 
         /// <summary>
+        /// 在世界坐标位置改变战争迷雾的透明度值，创建一个从当前透明度到指定目标透明度的过渡。它会考虑FogOfWarCenter和FogOfWarSize。注意只使用x和z坐标，Y（垂直）坐标被忽略。
         /// Changes the alpha value of the fog of war at world position creating a transition from current alpha value to specified target alpha. It takes into account FogOfWarCenter and FogOfWarSize.
         /// Note that only x and z coordinates are used. Y (vertical) coordinate is ignored.
         /// </summary>
-        /// <param name="worldPosition">in world space coordinates.</param>
-        /// <param name="radius">radius of application in world units.</param>
-        /// <param name="fogNewAlpha">target alpha value.</param>
-        /// <param name="duration">duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
-        /// <param name="smoothness">border smoothness (0 = sharp borders, 1 = smooth transition)</param>
+        /// <param name="worldPosition">世界空间坐标。in world space coordinates.</param>
+        /// <param name="radius">应用半径（世界单位）。radius of application in world units.</param>
+        /// <param name="fogNewAlpha">目标透明度值。target alpha value.</param>
+        /// <param name="duration">过渡持续时间（秒），0表示立即应用。duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
+        /// <param name="smoothness">边界平滑度（0 = 锐利边界，1 = 平滑过渡）。border smoothness (0 = sharp borders, 1 = smooth transition)</param>
         public void SetFogOfWarAlpha (Vector3 worldPosition, float radius, float fogNewAlpha, float duration, float smoothness) {
             SetFogOfWarAlpha(worldPosition, radius, fogNewAlpha, true, duration, smoothness, fogOfWarRestoreDelay, fogOfWarRestoreDuration);
         }
 
         /// <summary>
+        /// 在世界坐标位置改变战争迷雾的透明度值，创建一个从当前透明度到指定目标透明度的过渡。它会考虑FogOfWarCenter和FogOfWarSize。注意只使用x和z坐标，Y（垂直）坐标被忽略。
         /// Changes the alpha value of the fog of war at world position creating a transition from current alpha value to specified target alpha. It takes into account FogOfWarCenter and FogOfWarSize.
         /// Note that only x and z coordinates are used. Y (vertical) coordinate is ignored.
         /// </summary>
-        /// <param name="worldPosition">in world space coordinates.</param>
-        /// <param name="radius">radius of application in world units.</param>
-        /// <param name="blendAlpha">if new alpha is combined with preexisting alpha value or replaced.</param>
-        /// <param name="fogNewAlpha">target alpha value.</param>
-        /// <param name="duration">duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
-        /// <param name="smoothness">border smoothness (0 = sharp borders, 1 = smooth transition)</param>
-        /// <param name="updateMethod">if method should run on main thread (immediate effect) or in a background thread (update can be slower but doesn't affect main thread performance)</param>
+        /// <param name="worldPosition">世界空间坐标。in world space coordinates.</param>
+        /// <param name="radius">应用半径（世界单位）。radius of application in world units.</param>
+        /// <param name="blendAlpha">新透明度是否与原有透明度混合还是替换。if new alpha is combined with preexisting alpha value or replaced.</param>
+        /// <param name="fogNewAlpha">目标透明度值。target alpha value.</param>
+        /// <param name="duration">过渡持续时间（秒），0表示立即应用。duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
+        /// <param name="smoothness">边界平滑度（0 = 锐利边界，1 = 平滑过渡）。border smoothness (0 = sharp borders, 1 = smooth transition)</param>
+        /// <param name="updateMethod">方法是在主线程上运行（立即生效）还是在后台线程中运行（更新可能较慢但不会影响主线程性能）。if method should run on main thread (immediate effect) or in a background thread (update can be slower but doesn't affect main thread performance)</param>
         public void SetFogOfWarAlpha (Vector3 worldPosition, float radius, float fogNewAlpha, float duration, float smoothness, FoWUpdateMethod updateMethod = FoWUpdateMethod.BackgroundThread, bool blendAlpha = true) {
             SetFogOfWarAlpha(worldPosition, radius, fogNewAlpha, blendAlpha, duration, smoothness, fogOfWarRestoreDelay, fogOfWarRestoreDuration, restoreToAlphaValue: 1f, updateMethod);
         }
 
         /// <summary>
+        /// 在世界坐标位置改变战争迷雾的透明度值，创建一个从当前透明度到指定目标透明度的过渡。它会考虑FogOfWarCenter和FogOfWarSize。注意只使用x和z坐标，Y（垂直）坐标被忽略。
         /// Changes the alpha value of the fog of war at world position creating a transition from current alpha value to specified target alpha. It takes into account FogOfWarCenter and FogOfWarSize.
         /// Note that only x and z coordinates are used. Y (vertical) coordinate is ignored.
         /// </summary>
-        /// <param name="worldPosition">in world space coordinates.</param>
-        /// <param name="radius">radius of application in world units.</param>
-        /// <param name="fogNewAlpha">target alpha value.</param>
-        /// <param name="blendAlpha">if new alpha is combined with preexisting alpha value or replaced.</param>
-        /// <param name="duration">duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
-        /// <param name="smoothness">border smoothness.</param>
-        /// <param name="restoreDelay">delay before the fog alpha is restored. Pass 0 to keep change forever.</param>
-        /// <param name="restoreDuration">restore duration in seconds.</param>
-        /// <param name="restoreToAlphaValue">final alpha value when fog restores.</param>
-        /// <param name="updateMethod">if method should run on main thread (immediate effect) or in a background thread (update can be slower but doesn't affect main thread performance)</param>
+        /// <param name="worldPosition">世界空间坐标。in world space coordinates.</param>
+        /// <param name="radius">应用半径（世界单位）。radius of application in world units.</param>
+        /// <param name="fogNewAlpha">目标透明度值。target alpha value.</param>
+        /// <param name="blendAlpha">新透明度是否与原有透明度混合还是替换。if new alpha is combined with preexisting alpha value or replaced.</param>
+        /// <param name="duration">过渡持续时间（秒），0表示立即应用。duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
+        /// <param name="smoothness">边界平滑度。border smoothness.</param>
+        /// <param name="restoreDelay">雾透明度恢复前的延迟时间。设为0表示永久保持改变。delay before the fog alpha is restored. Pass 0 to keep change forever.</param>
+        /// <param name="restoreDuration">恢复持续时间（秒）。restore duration in seconds.</param>
+        /// <param name="restoreToAlphaValue">雾恢复时的最终透明度值。final alpha value when fog restores.</param>
+        /// <param name="updateMethod">方法是在主线程上运行（立即生效）还是在后台线程中运行（更新可能较慢但不会影响主线程性能）。if method should run on main thread (immediate effect) or in a background thread (update can be slower but doesn't affect main thread performance)</param>
         public void SetFogOfWarAlpha (Vector3 worldPosition, float radius, float fogNewAlpha, bool blendAlpha, float duration, float smoothness, float restoreDelay, float restoreDuration, float restoreToAlphaValue = 1f, FoWUpdateMethod updateMethod = FoWUpdateMethod.BackgroundThread) {
 
             if (_fogOfWarTexture == null || fogOfWarColorBuffer == null || fogOfWarColorBuffer.Length == 0)
@@ -475,42 +484,46 @@ namespace VolumetricFogAndMist2 {
         }
 
         /// <summary>
+        /// 在边界范围内改变战争迷雾的透明度值，创建一个从当前透明度到指定目标透明度的过渡。它会考虑FogOfWarCenter和FogOfWarSize。注意只使用x和z坐标，Y（垂直）坐标被忽略。
         /// Changes the alpha value of the fog of war within bounds creating a transition from current alpha value to specified target alpha. It takes into account FogOfWarCenter and FogOfWarSize.
         /// Note that only x and z coordinates are used. Y (vertical) coordinate is ignored.
         /// </summary>
-        /// <param name="bounds">in world space coordinates.</param>
-        /// <param name="fogNewAlpha">target alpha value.</param>
-        /// <param name="duration">duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
+        /// <param name="bounds">世界空间坐标边界。in world space coordinates.</param>
+        /// <param name="fogNewAlpha">目标透明度值。target alpha value.</param>
+        /// <param name="duration">过渡持续时间（秒），0表示立即应用。duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
         public void SetFogOfWarAlpha (Bounds bounds, float fogNewAlpha, float duration = 0) {
             SetFogOfWarAlpha(bounds, fogNewAlpha, false, duration, fogOfWarSmoothness, fogOfWarRestoreDelay, fogOfWarRestoreDuration);
         }
 
         /// <summary>
+        /// 在边界范围内改变战争迷雾的透明度值，创建一个从当前透明度到指定目标透明度的过渡。它会考虑FogOfWarCenter和FogOfWarSize。注意只使用x和z坐标，Y（垂直）坐标被忽略。
         /// Changes the alpha value of the fog of war within bounds creating a transition from current alpha value to specified target alpha. It takes into account FogOfWarCenter and FogOfWarSize.
         /// Note that only x and z coordinates are used. Y (vertical) coordinate is ignored.
         /// </summary>
-        /// <param name="bounds">in world space coordinates.</param>
-        /// <param name="fogNewAlpha">target alpha value.</param>
-        /// <param name="duration">duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
-        /// <param name="smoothness">border smoothness.</param>
+        /// <param name="bounds">世界空间坐标边界。in world space coordinates.</param>
+        /// <param name="fogNewAlpha">目标透明度值。target alpha value.</param>
+        /// <param name="duration">过渡持续时间（秒），0表示立即应用。duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
+        /// <param name="smoothness">边界平滑度。border smoothness.</param>
         public void SetFogOfWarAlpha (Bounds bounds, float fogNewAlpha, float duration, float smoothness) {
             SetFogOfWarAlpha(bounds, fogNewAlpha, false, duration, smoothness, fogOfWarRestoreDelay, fogOfWarRestoreDuration);
         }
 
 
         /// <summary>
+        /// 在边界范围内改变战争迷雾的透明度值，创建一个从当前透明度到指定目标透明度的过渡。它会考虑FogOfWarCenter和FogOfWarSize。注意只使用x和z坐标，Y（垂直）坐标被忽略。
         /// Changes the alpha value of the fog of war within bounds creating a transition from current alpha value to specified target alpha. It takes into account FogOfWarCenter and FogOfWarSize.
         /// Note that only x and z coordinates are used. Y (vertical) coordinate is ignored.
         /// </summary>
-        /// <param name="bounds">in world space coordinates.</param>
-        /// <param name="fogNewAlpha">target alpha value (0-1).</param>
-        /// <param name="blendAlpha">if new alpha is combined with preexisting alpha value or replaced.</param>
-        /// <param name="duration">duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
-        /// <param name="smoothness">border smoothness.</param>
-        /// <param name="fuzzyness">randomization of border noise.</param>
-        /// <param name="restoreDelay">delay before the fog alpha is restored. Pass 0 to keep change forever.</param>
-        /// <param name="restoreDuration">restore duration in seconds.</param>
-        /// <param name="restoreToAlpha">alpha value (0-1) for the fog when restore is completed.</param>
+        /// <param name="bounds">世界空间坐标边界。in world space coordinates.</param>
+        /// <param name="fogNewAlpha">目标透明度值（0-1）。target alpha value (0-1).</param>
+        /// <param name="blendAlpha">新透明度是否与原有透明度混合还是替换。if new alpha is combined with preexisting alpha value or replaced.</param>
+        /// <param name="duration">过渡持续时间（秒），0表示立即应用。duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
+        /// <param name="smoothness">边界平滑度。border smoothness.</param>
+        /// <param name="fuzzyness">随机边界噪点。randomization of border noise.</param>
+        /// <param name="restoreDelay">雾透明度恢复前的延迟时间。设为0表示永久保持改变。delay before the fog alpha is restored. Pass 0 to keep change forever.</param>
+        /// <param name="restoreDuration">恢复持续时间（秒）。restore duration in seconds.</param>
+        /// <param name="restoreToAlpha">恢复完成后的雾透明度值（0-1）。alpha value (0-1) for the fog when restore is completed.</param>
+        /// <param name="updateMethod">方法是在主线程上运行（立即生效）还是在后台线程中运行（更新可能较慢但不会影响主线程性能）。if method should run on main thread (immediate effect) or in a background thread (update can be slower but doesn't affect main thread performance)</param>
         public void SetFogOfWarAlpha (Bounds bounds, float fogNewAlpha, bool blendAlpha, float duration, float smoothness, float restoreDelay, float restoreDuration, float restoreToAlpha = 1f, FoWUpdateMethod updateMethod = FoWUpdateMethod.BackgroundThread) {
             if (_fogOfWarTexture == null || fogOfWarColorBuffer == null || fogOfWarColorBuffer.Length == 0)
                 return;
@@ -604,17 +617,18 @@ namespace VolumetricFogAndMist2 {
 
 
         /// <summary>
+        /// 在碰撞体范围内改变战争迷雾的透明度值。它会考虑FogOfWarCenter和FogOfWarSize。注意只使用x和z坐标，Y（垂直）坐标被忽略。
         /// Changes the alpha value of the fog of war within collider creating a transition from current alpha value to specified target alpha. It takes into account FogOfWarCenter and FogOfWarSize.
         /// Note that only x and z coordinates are used. Y (vertical) coordinate is ignored.
         /// </summary>
-        /// <param name="collider">collider used to define the shape of the area where fog of war alpha will be set. Collider must be convex.</param>
-        /// <param name="fogNewAlpha">target alpha value (0-1).</param>
-        /// <param name="blendAlpha">if new alpha is combined with preexisting alpha value or replaced.</param>
-        /// <param name="duration">duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
-        /// <param name="smoothness">border smoothness.</param>
-        /// <param name="restoreDelay">delay before the fog alpha is restored. Pass 0 to keep change forever.</param>
-        /// <param name="restoreDuration">restore duration in seconds.</param>
-        /// <param name="restoreToAlpha">alpha value (0-1) for the fog when restore is completed.</param>
+        /// <param name="collider">用于定义战争迷雾透明度设置区域形状的碰撞体。碰撞体必须是凸的。collider used to define the shape of the area where fog of war alpha will be set. Collider must be convex.</param>
+        /// <param name="fogNewAlpha">目标透明度值（0-1）。target alpha value (0-1).</param>
+        /// <param name="blendAlpha">新透明度是否与原有透明度混合还是替换。if new alpha is combined with preexisting alpha value or replaced.</param>
+        /// <param name="duration">过渡持续时间（秒），0表示立即应用。duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
+        /// <param name="smoothness">边界平滑度。border smoothness.</param>
+        /// <param name="restoreDelay">雾透明度恢复前的延迟时间。设为0表示永久保持改变。delay before the fog alpha is restored. Pass 0 to keep change forever.</param>
+        /// <param name="restoreDuration">恢复持续时间（秒）。restore duration in seconds.</param>
+        /// <param name="restoreToAlpha">恢复完成后的雾透明度值（0-1）。alpha value (0-1) for the fog when restore is completed.</param>
         public void SetFogOfWarAlpha (Collider collider, float fogNewAlpha, bool blendAlpha = false, float duration = 0, float smoothness = 0, float restoreDelay = 0, float restoreDuration = 2, float restoreToAlpha = 1f) {
             if (_fogOfWarTexture == null || fogOfWarColorBuffer == null || fogOfWarColorBuffer.Length == 0)
                 return;
@@ -693,15 +707,16 @@ namespace VolumetricFogAndMist2 {
         }
 
         /// <summary>
+        /// 在游戏对象边界范围内改变战争迷雾的透明度值。它会考虑FogOfWarCenter和FogOfWarSize。注意只使用x和z坐标，Y（垂直）坐标被忽略。
         /// Changes the alpha value of the fog of war within bounds creating a transition from current alpha value to specified target alpha. It takes into account FogOfWarCenter and FogOfWarSize.
         /// Note that only x and z coordinates are used. Y (vertical) coordinate is ignored.
         /// </summary>
-        /// <param name="go">gameobject used to define the shape of the area where fog of war alpha will be set. The gameobject must have a mesh associated.</param>
-        /// <param name="fogNewAlpha">target alpha value (0-1).</param>
-        /// <param name="duration">duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
-        /// <param name="restoreDelay">delay before the fog alpha is restored. Pass 0 to keep change forever.</param>
-        /// <param name="restoreDuration">restore duration in seconds.</param>
-        /// <param name="restoreToAlpha">alpha value (0-1) for the fog when restore is completed.</param>
+        /// <param name="go">用于定义战争迷雾透明度设置区域形状的游戏对象。该游戏对象必须关联一个网格。gameobject used to define the shape of the area where fog of war alpha will be set. The gameobject must have a mesh associated.</param>
+        /// <param name="fogNewAlpha">目标透明度值（0-1）。target alpha value (0-1).</param>
+        /// <param name="duration">过渡持续时间（秒），0表示立即应用。duration of transition in seconds (0 = apply fogNewAlpha instantly).</param>
+        /// <param name="restoreDelay">雾透明度恢复前的延迟时间。设为0表示永久保持改变。delay before the fog alpha is restored. Pass 0 to keep change forever.</param>
+        /// <param name="restoreDuration">恢复持续时间（秒）。restore duration in seconds.</param>
+        /// <param name="restoreToAlpha">恢复完成后的雾透明度值（0-1）。alpha value (0-1) for the fog when restore is completed.</param>
         public void SetFogOfWarAlpha (GameObject go, float fogNewAlpha, float duration = 0, float restoreDelay = 0, float restoreDuration = 2, float restoreToAlpha = 1f, FoWUpdateMethod updateMethod = FoWUpdateMethod.BackgroundThread) {
             if (_fogOfWarTexture == null || fogOfWarColorBuffer == null || fogOfWarColorBuffer.Length == 0)
                 return;
@@ -863,11 +878,11 @@ namespace VolumetricFogAndMist2 {
 
 
         /// <summary>
-        /// Restores fog of war to full opacity
+        /// 将战争迷雾恢复为完全不透明。Restores fog of war to full opacity
         /// </summary>
-        /// <param name="worldPosition">World position.</param>
-        /// <param name="radius">Radius.</param>
-        /// <param name="alpha">Alpha value (1f = fully opaque)</param>
+        /// <param name="worldPosition">世界坐标位置。World position.</param>
+        /// <param name="radius">半径。Radius.</param>
+        /// <param name="alpha">透明度值（1f = 完全不透明）。Alpha value (1f = fully opaque)</param>
         public void ResetFogOfWarAlpha (Vector3 worldPosition, float radius, float alpha = 1f) {
             if (_fogOfWarTexture == null || fogOfWarColorBuffer == null || fogOfWarColorBuffer.Length == 0)
                 return;
@@ -911,26 +926,26 @@ namespace VolumetricFogAndMist2 {
 
 
         /// <summary>
-        /// Restores fog of war to full opacity
+        /// 将战争迷雾恢复为完全不透明。Restores fog of war to full opacity
         /// </summary>
         public void ResetFogOfWarAlpha (Bounds bounds, float alpha = 1f) {
             ResetFogOfWarAlpha(bounds.center, bounds.extents.x, bounds.extents.z, alpha);
         }
 
         /// <summary>
-        /// Restores fog of war to full opacity
+        /// 将战争迷雾恢复为完全不透明。Restores fog of war to full opacity
         /// </summary>
         public void ResetFogOfWarAlpha (Vector3 position, Vector3 size, float alpha = 1f) {
             ResetFogOfWarAlpha(position, size.x * 0.5f, size.z * 0.5f, alpha);
         }
 
         /// <summary>
-        /// Restores fog of war to full opacity
+        /// 将战争迷雾恢复为完全不透明。Restores fog of war to full opacity
         /// </summary>
-        /// <param name="position">Position in world space.</param>
-        /// <param name="extentsX">Half of the length of the rectangle in X-Axis.</param>
-        /// <param name="extentsZ">Half of the length of the rectangle in Z-Axis.</param>
-        /// <param name="alpha">Alpha value (1f = fully opaque)</param>
+        /// <param name="position">世界空间坐标位置。Position in world space.</param>
+        /// <param name="extentsX">X轴矩形边长的一半。Half of the length of the rectangle in X-Axis.</param>
+        /// <param name="extentsZ">Z轴矩形边长的一半。Half of the length of the rectangle in Z-Axis.</param>
+        /// <param name="alpha">透明度值（1f = 完全不透明）。Alpha value (1f = fully opaque)</param>
         public void ResetFogOfWarAlpha (Vector3 position, float extentsX, float extentsZ, float alpha = 1f) {
             if (_fogOfWarTexture == null || fogOfWarColorBuffer == null || fogOfWarColorBuffer.Length == 0)
                 return;
@@ -987,6 +1002,7 @@ namespace VolumetricFogAndMist2 {
         }
 
         /// <summary>
+        /// 获取或设置战争迷雾状态，以Color32缓冲区形式存储。透明度通道存储该位置雾的透明度（0 = 无雾，1 = 不透明）。
         /// Gets or set fog of war state as a Color32 buffer. The alpha channel stores the transparency of the fog at that position (0 = no fog, 1 = opaque).
         /// </summary>
         public Color32[] fogOfWarTextureData {
@@ -1048,10 +1064,10 @@ namespace VolumetricFogAndMist2 {
 
 
         /// <summary>
-        /// Gets the current alpha value of the Fog of War at a given world position
+        /// 获取给定世界坐标位置战争迷雾的当前透明度值。Gets the current alpha value of the Fog of War at a given world position
         /// </summary>
-        /// <returns>The fog of war alpha.</returns>
-        /// <param name="worldPosition">World position.</param>
+        /// <returns>战争迷雾透明度值。The fog of war alpha.</returns>
+        /// <param name="worldPosition">世界坐标位置。World position.</param>
         public float GetFogOfWarAlpha (Vector3 worldPosition) {
             if (fogOfWarColorBuffer == null || fogOfWarColorBuffer.Length == 0 || _fogOfWarTexture == null)
                 return 1f;

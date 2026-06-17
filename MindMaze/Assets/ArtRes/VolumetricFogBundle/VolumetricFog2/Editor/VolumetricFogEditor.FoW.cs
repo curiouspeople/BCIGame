@@ -103,7 +103,7 @@ namespace VolumetricFogAndMist2 {
                 maskColors = fog.fogOfWarTextureData;
             }
             if (maskColors == null) {
-                EditorUtility.DisplayDialog("Fog Of War Editor", "Re-enable fog of war to create the underline texture.", "Ok");
+                EditorUtility.DisplayDialog("Fog Of War Editor 战争迷雾编辑器", "重新启用战争迷雾以创建底层纹理。Re-enable fog of war to create the underline texture.", "Ok");
                 return;
             }
             Vector3 fogOfWarCenter = fog.anchoredFogOfWarCenter;
@@ -149,7 +149,7 @@ namespace VolumetricFogAndMist2 {
                 maskColors = fog.fogOfWarTextureData;
             }
             if (maskColors == null) {
-                EditorUtility.DisplayDialog("Fog Of War Editor", "Re-enable fog of war to create the underline texture.", "Ok");
+                EditorUtility.DisplayDialog("Fog Of War Editor 战争迷雾编辑器", "重新启用战争迷雾以创建底层纹理。Re-enable fog of war to create the underline texture.", "Ok");
                 return;
             }
             Vector3 fogOfWarCenter = fog.anchoredFogOfWarCenter;

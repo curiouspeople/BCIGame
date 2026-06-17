@@ -8,9 +8,9 @@ namespace VolumetricFogAndMist2 {
 
         [NonSerialized] public Light pointLight;
 
-        [Tooltip("Inscattering multiplier for this point light")]
+        [Tooltip("此点光源的内散射倍增系数。Inscattering multiplier for this point light")]
         public float inscattering = 1f;
-        [Tooltip("Intensity multiplier for this point light")]
+        [Tooltip("此点光源的强度倍增系数。Intensity multiplier for this point light")]
         public float intensity = 1f;
 
         private void OnEnable() {

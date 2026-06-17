@@ -21,6 +21,7 @@ MonoBehaviour:
   sortingOrder: 0
   constantDensity: 0
   noiseTexture: {fileID: 2800000, guid: 9c79340e1a1054275ba04070a27de306, type: 3}
+  noiseTextureOptimizedSize: 256
   noiseStrength: 1.32
   noiseScale: 2
   noiseFinalMultiplier: 1
@@ -31,6 +32,7 @@ MonoBehaviour:
   detailOffset: -0.5
   density: 0.5
   shape: 0
+  scaleNoiseWithHeight: 0
   border: 0.05
   customHeight: 0
   height: 0
@@ -76,6 +78,7 @@ MonoBehaviour:
     atime6: 0
     atime7: 0
     m_Mode: 0
+    m_ColorSpace: -1
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   depthGradientMaxDistance: 1000
@@ -107,6 +110,7 @@ MonoBehaviour:
     atime6: 0
     atime7: 0
     m_Mode: 0
+    m_ColorSpace: -1
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   brightness: 1
@@ -123,8 +127,10 @@ MonoBehaviour:
   sunColor: {r: 0, g: 0.9568, b: 0.8392, a: 1}
   sunIntensity: 1
   ambientLightMultiplier: 0
+  lightDiffusionModel: 0
   lightDiffusionPower: 32
   lightDiffusionIntensity: 0.4
+  lightDiffusionNearDepthAtten: 0
   receiveShadows: 0
   shadowIntensity: 0.5
   shadowCancellation: 0
@@ -138,3 +144,6 @@ MonoBehaviour:
   distantFogColor: {r: 0.358, g: 0.358, b: 0.358, a: 1}
   distantFogDiffusionIntensity: 0.4
   distantFogRenderQueue: 2999
+  distantFogBaseAltitude: 0
+  distantFogSymmetrical: 0
+  customMesh: {fileID: 0}

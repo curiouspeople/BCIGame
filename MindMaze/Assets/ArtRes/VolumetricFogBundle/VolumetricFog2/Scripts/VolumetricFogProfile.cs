@@ -23,38 +23,44 @@ namespace VolumetricFogAndMist2 {
     }
 
     public enum DiffusionModel {
+        [InspectorName("Simple 简单")]
         Simple,
+        [InspectorName("Smooth 平滑")]
         Smooth,
+        [InspectorName("Strong 强烈")]
         Strong
     }
 
     public enum VolumetricFogShape {
+        [InspectorName("Box 盒形")]
         Box,
+        [InspectorName("Sphere 球形")]
         Sphere,
+        [InspectorName("Custom 自定义")]
         Custom
     }
 
-    [CreateAssetMenu(menuName = "Volumetric Fog \x8B& Mist/Fog Profile", fileName = "VolumetricFogProfile", order = 1001)]
+    [CreateAssetMenu(menuName = "Volumetric Fog \x8B& Mist/Fog Profile 体积雾配置", fileName = "VolumetricFogProfile", order = 1001)]
     public class VolumetricFogProfile : ScriptableObject {
 
-        [Header("Rendering")]
+        [Header("Rendering 渲染设置")]
         [Range(1, 16)] public int raymarchQuality = 6;
-        [Tooltip("Determines the minimum step size. Increase to improve performance / decrease to improve accuracy. When increasing this value, you can also increase 'Jittering' amount to improve quality.")]
+        [Tooltip("确定最小步长。增大可提高性能/减小可提高精度。增大此值时，可同时增大'Jittering 抖动'值来提高质量。Determines the minimum step size. Increase to improve performance / decrease to improve accuracy. When increasing this value, you can also increase 'Jittering' amount to improve quality.")]
         public float raymarchMinStep = 0.1f;
         public float jittering = 0.5f;
         [Range(0, 2)] public float dithering = 1f;
-        [Tooltip("The render queue for this renderer. By default, all transparent objects use a render queue of 3000. Use a lower value to render before all transparent objects.")]
+        [Tooltip("渲染队列值。默认透明物体使用3000。使用更小的值可在所有透明物体之前渲染。The render queue for this renderer. By default, all transparent objects use a render queue of 3000. Use a lower value to render before all transparent objects.")]
         public int renderQueue = 3100;
-        [Tooltip("Optional sorting layer Id (number) for this renderer. By default 0. Usually used to control the order with other transparent renderers, like Sprite Renderer.")]
+        [Tooltip("可选排序图层ID。默认0。通常用于控制与其他透明渲染器（如精灵渲染器）的顺序。Optional sorting layer Id (number) for this renderer. By default 0. Usually used to control the order with other transparent renderers, like Sprite Renderer.")]
         public int sortingLayerID;
-        [Tooltip("Optional sorting order for this renderer. Used to control the order with other transparent renderers, like Sprite Renderer.")]
+        [Tooltip("可选排序顺序。用于控制与其他透明渲染器的顺序。Optional sorting order for this renderer. Used to control the order with other transparent renderers, like Sprite Renderer.")]
         public int sortingOrder;
 
-        [Header("Density")]
-        [Tooltip("Do not use any noise at all")]
+        [Header("Density 浓度")]
+        [Tooltip("完全不使用任何噪声。Do not use any noise at all")]
         public bool constantDensity;
         public Texture2D noiseTexture;
-        [Tooltip("Size of the final noise used by the shader. Reduce to improve performance on old devices.")]
+        [Tooltip("着色器使用的最终噪声大小。减小可提高旧设备性能。Size of the final noise used by the shader. Reduce to improve performance on old devices.")]
         public VolumetricFogNoiseSize noiseTextureOptimizedSize = VolumetricFogNoiseSize._256;
         [Range(0, 3)] public float noiseStrength = 1f;
         public float noiseScale = 15f;
@@ -68,34 +74,34 @@ namespace VolumetricFogAndMist2 {
 
         public float density = 1f;
 
-        [Header("Geometry")]
+        [Header("Geometry 几何体")]
         public VolumetricFogShape shape = VolumetricFogShape.Box;
         [Range(0, 1)]
         public float scaleNoiseWithHeight;
         [Range(0, 1f)] public float border = 0.05f;
-        [Tooltip("Ignores volume height and use a custom height defined by this profile")]
+        [Tooltip("忽略体积高度，使用此配置文件定义的自定义高度。Ignores volume height and use a custom height defined by this profile")]
         public bool customHeight;
         public float height;
         public float verticalOffset;
-        [Tooltip("When enabled, makes fog appear at certain distance from a camera")]
+        [Tooltip("启用后使雾在距相机一定距离处出现。When enabled, makes fog appear at certain distance from a camera")]
         public float distance;
         [Range(0, 1)] public float distanceFallOff = 0.93f;
-        [Tooltip("Maximum distance from camera")]
+        [Tooltip("距相机的最大距离。Maximum distance from camera")]
         public float maxDistance = 10000;
         [Range(0, 1)]
         public float maxDistanceFallOff;
 
-        [Tooltip("Fits the fog altitude to the terrain heightmap")]
+        [Tooltip("将雾高度适配到地形高度图。Fits the fog altitude to the terrain heightmap")]
         public bool terrainFit;
         public VolumetricFog.HeightmapCaptureResolution terrainFitResolution = VolumetricFog.HeightmapCaptureResolution._128;
-        [Tooltip("Which objects will be included in the heightmap capture. By default all objects are included but you may want to restrict this to just the terrain.")]
+        [Tooltip("哪些对象将包含在高度图捕获中。默认包含所有对象，但你可能只想限制为地形。Which objects will be included in the heightmap capture. By default all objects are included but you may want to restrict this to just the terrain.")]
         public LayerMask terrainLayerMask = -1;
-        [Tooltip("The height of fog above terrain surface.")]
+        [Tooltip("地形表面上方雾的高度。The height of fog above terrain surface.")]
         public float terrainFogHeight = 25f;
         public float terrainFogMinAltitude;
         public float terrainFogMaxAltitude = 150f;
 
-        [Header("Colors")]
+        [Header("Colors 颜色")]
         [ColorUsage(showAlpha: false)]
         public Color albedo = new Color32(227, 227, 227, 255);
         public bool enableDepthGradient;
@@ -109,22 +115,22 @@ namespace VolumetricFogAndMist2 {
         [Range(0, 1f)] public float specularThreshold = 0.637f;
         [Range(0, 1f)] public float specularIntensity = 0.428f;
 
-        [Header("Animation")]
+        [Header("Animation 动画")]
         public float turbulence = 0.73f;
         public Vector3 windDirection = new Vector3(0.02f, 0, 0);
         public bool useCustomDetailNoiseWindDirection;
         public Vector3 detailNoiseWindDirection = new Vector3(0.02f, 0, 0);
 
-        [Header("Directional Light")]
-        [Tooltip("Enable to synchronize fog light intensity and color with the Sun and the Moon (must be assigned into Volumetric Fog Manager)")]
+        [Header("Directional Light 方向光")]
+        [Tooltip("启用以使雾的光照强度和颜色与太阳和月亮同步（需在体积雾管理器中指定）。Enable to synchronize fog light intensity and color with the Sun and the Moon (must be assigned into Volumetric Fog Manager)")]
         public bool dayNightCycle = true;
-        [Tooltip("When day/night cycle option is disabled, customize the direction of the Sun light.")]
+        [Tooltip("当昼夜循环选项禁用时，自定义太阳光的方向。When day/night cycle option is disabled, customize the direction of the Sun light.")]
         public Vector3 sunDirection = Vector3.up;
-        [Tooltip("Custom sun color when day/night cycle is disabled")]
+        [Tooltip("禁用昼夜循环时的自定义太阳颜色。Custom sun color when day/night cycle is disabled")]
         public Color sunColor = new Color(0, 0.9568f, 0.8392f);
-        [Tooltip("Custom sun intensity when day/night cycle is disabled")]
+        [Tooltip("禁用昼夜循环时的自定义太阳强度。Custom sun intensity when day/night cycle is disabled")]
         public float sunIntensity = 1f;
-        [Tooltip("Ambient light influence")]
+        [Tooltip("环境光影响程度。Ambient light influence")]
         public float ambientLightMultiplier;
         public DiffusionModel lightDiffusionModel = DiffusionModel.Simple;
         [Range(0, 256)] public float lightDiffusionPower = 32;
@@ -132,14 +138,14 @@ namespace VolumetricFogAndMist2 {
         public float lightDiffusionNearDepthAtten;
         public bool receiveShadows;
         [Range(0, 1)] public float shadowIntensity = 0.5f;
-        [Tooltip("Removes shadowed fog")]
+        [Tooltip("移除被阴影遮挡的雾。Removes shadowed fog")]
         [Range(0, 1)] public float shadowCancellation;
         public float shadowMaxDistance = 250f;
-        [Tooltip("Uses the directional light cookie")]
+        [Tooltip("使用方向光的Cookie。Uses the directional light cookie")]
         public bool cookie;
 
-        [Header("Distant Fog")]
-        [Tooltip("Enables exponential distant fog. Use this option to cover horizon/sky/far distances with optimal performance")]
+        [Header("Distant Fog 远距离雾")]
+        [Tooltip("启用指数远距离雾。使用此选项以最佳性能覆盖地平线/天空/远距离。Enables exponential distant fog. Use this option to cover horizon/sky/far distances with optimal performance")]
         public bool distantFog;
         public float distantFogStartDistance = 1000f;
         public float distantFogDistanceDensity = 0.5f;
@@ -151,7 +157,7 @@ namespace VolumetricFogAndMist2 {
         public float distantFogBaseAltitude;
         public bool distantFogSymmetrical;
 
-        [Tooltip("Custom mesh to use when shape is set to Custom")]
+        [Tooltip("当形状设为自定义时，使用自定义网格。Custom mesh to use when shape is set to Custom")]
         public Mesh customMesh;
 
         public event OnSettingsChanged onSettingsChanged;

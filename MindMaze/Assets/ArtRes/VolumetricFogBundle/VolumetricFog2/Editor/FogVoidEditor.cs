@@ -18,8 +18,8 @@ namespace VolumetricFogAndMist2 {
 
             serializedObject.Update();
 
-            EditorGUILayout.PropertyField(roundness);
-            EditorGUILayout.PropertyField(falloff);
+            EditorGUILayout.PropertyField(roundness, new GUIContent("Roundness 圆度"));
+            EditorGUILayout.PropertyField(falloff, new GUIContent("Falloff 衰减"));
 
             serializedObject.ApplyModifiedProperties();
 

@@ -17,7 +17,7 @@ namespace VolumetricFogAndMist2 {
 
         public override void OnInspectorGUI() {
 
-            EditorGUILayout.HelpBox("Custom multipliers for this point light only. Manage global settings using the Point Light Manager.", MessageType.Info);
+            EditorGUILayout.HelpBox("仅针对此点光源的自定义倍增值。使用点光源管理器管理全局设置。Custom multipliers for this point light only. Manage global settings using the Point Light Manager.", MessageType.Info);
             if (GUILayout.Button("Open Point Light Manager")) {
                 Selection.activeGameObject = VolumetricFogManager.pointLightManager.gameObject;
                 GUIUtility.ExitGUI();
@@ -26,8 +26,8 @@ namespace VolumetricFogAndMist2 {
             EditorGUILayout.Separator();
 
             serializedObject.Update();
-            EditorGUILayout.PropertyField(inscattering);
-            EditorGUILayout.PropertyField(intensity);
+            EditorGUILayout.PropertyField(inscattering, new GUIContent("Inscattering 内散射"));
+            EditorGUILayout.PropertyField(intensity, new GUIContent("Intensity 强度"));
             serializedObject.ApplyModifiedProperties();
         }
     }

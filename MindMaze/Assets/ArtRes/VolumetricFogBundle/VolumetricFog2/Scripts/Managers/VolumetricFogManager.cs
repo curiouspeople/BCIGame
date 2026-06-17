@@ -1,4 +1,4 @@
-﻿//#define FOG_VOID_ROTATION
+﻿#define FOG_VOID_ROTATION
 
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -19,46 +19,46 @@ namespace VolumetricFogAndMist2 {
         static FogVoidManager _fogVoidManager;
         static VolumetricFogManager _instance;
 
-        [Tooltip("Directional light used as the Sun")]
+        [Tooltip("用作太阳的方向光。Directional light used as the Sun")]
         public Light sun;
-        [Tooltip("Directional light used as the Moon")]
+        [Tooltip("用作月亮的方向光。Directional light used as the Moon")]
         public Light moon;
-        [Tooltip("Flip depth texture. Use only as a workaround to a bug in URP if the depth shows inverted in GameView. Alternatively you can enable MSAA or HDR instead of using this option.")]
+        [Tooltip("翻转深度纹理。仅在URP中深度在GameView中显示反转时作为Bug的临时解决方案使用。你也可以启用MSAA或HDR来代替此选项。Flip depth texture. Use only as a workaround to a bug in URP if the depth shows inverted in GameView. Alternatively you can enable MSAA or HDR instead of using this option.")]
         public bool flipDepthTexture;
-        [Tooltip("Enable this option to choose this manager when others could be loaded from sub-scenes")]
+        [Tooltip("启用此选项可在其他子场景可能加载管理器时选择当前管理器。Enable this option to choose this manager when others could be loaded from sub-scenes")]
         public bool mainManager;
-        [Tooltip("Optionally specify which transparent layers must be included in the depth prepass. Use only to avoid fog clipping with certain transparent objects.")]
+        [Tooltip("可选择指定哪些透明层必须包含在深度预通道中。仅在避免雾与某些透明物体裁剪时使用。Optionally specify which transparent layers must be included in the depth prepass. Use only to avoid fog clipping with certain transparent objects.")]
         public LayerMask includeTransparent;
-        [Tooltip("Cull mode for the transparent depth prepass")]
+        [Tooltip("透明深度预通道的剔除模式。Cull mode for the transparent depth prepass")]
         public CullMode transparentCullMode = CullMode.Back;
-        [Tooltip("Renders fog in two stages: on the back and on the front of transparent objects such as particles")]
+        [Tooltip("分两个阶段渲染雾：在透明物体（如粒子）的背面和正面。Renders fog in two stages: on the back and on the front of transparent objects such as particles")]
         public bool depthPeeling;
-        [Tooltip("Optionally specify which semi-transparent (materials using alpha clipping or cut-off) must be included in the depth prepass. Use only to avoid fog clipping with certain transparent objects.")]
+        [Tooltip("可选择指定哪些半透明（使用透明度裁剪或cut-off的材质）必须包含在深度预通道中。仅在避免雾与某些透明物体裁剪时使用。Optionally specify which semi-transparent (materials using alpha clipping or cut-off) must be included in the depth prepass. Use only to avoid fog clipping with certain transparent objects.")]
         public LayerMask includeSemiTransparent;
-        [Tooltip("Optionally determines the alpha cut off for semitransparent objects")]
+        [Tooltip("可选择设置半透明物体的透明度裁剪阈值。Optionally determines the alpha cut off for semitransparent objects")]
         [Range(0, 1)]
         public float alphaCutOff;
-        [Tooltip("Cull mode for the semitransparent depth prepass")]
+        [Tooltip("半透明深度预通道的剔除模式。Cull mode for the semitransparent depth prepass")]
         public CullMode semiTransparentCullMode = CullMode.Back;
 
-        [Tooltip("Light scattering effect through fog")]
+        [Tooltip("雾中光线散射效果。Light scattering effect through fog")]
         [Range(0, 1)]
         public float scattering;
 
-        [Tooltip("Threshold applied to input brightness")]
+        [Tooltip("输入亮度的阈值。Threshold applied to input brightness")]
         public float scatteringThreshold;
-        [Tooltip("Brightness multiplier applied to input")]
+        [Tooltip("输入亮度倍增系数。Brightness multiplier applied to input")]
         public float scatteringIntensity;
-        [Tooltip("Absorption or brightness decay inside the fog")]
+        [Tooltip("雾中的吸收或亮度衰减。Absorption or brightness decay inside the fog")]
         [Range(0, 1)]
         public float scatteringAbsorption = 0.35f;
         public Color scatteringTint = Color.white;
-        [Tooltip("Uses higher resolution intermediate buffers and edge-aware upsampling filter")]
+        [Tooltip("使用更高分辨率的中间缓冲区和边缘感知的上采样滤镜。Uses higher resolution intermediate buffers and edge-aware upsampling filter")]
         public bool scatteringHighQuality;
 
         [Range(1, 8)]
         public float downscaling = 1;
-        [Tooltip("Depth-based detection threshold for the upscaling reconstruction filter")]
+        [Tooltip("上采样重建滤镜的基于深度的检测阈值。Depth-based detection threshold for the upscaling reconstruction filter")]
         public float downscalingEdgeDepthThreshold = 0.05f;
         [Range(0, 6)]
         public int blurPasses;
@@ -66,11 +66,11 @@ namespace VolumetricFogAndMist2 {
         public float blurDownscaling = 1;
         [Range(0.1f, 4)]
         public float blurSpread = 1f;
-        [Tooltip("Uses 16-bit RGBA floating point pixel format for rendering & blur fog volumes. If disabled, 8-bit RGBA pixel format will be used which can improve performance on certain devices. Note that if you use bloom or other HDR-based effects, you should enable this HDR option as well.")]
+        [Tooltip("使用16位RGBA浮点像素格式进行雾体积的渲染和模糊。如果禁用，将使用8位RGBA像素格式，这可以在某些设备上提高性能。注意：如果你使用Bloom或其他基于HDR的效果，也应启用此HDR选项。Uses 16-bit RGBA floating point pixel format for rendering & blur fog volumes. If disabled, 8-bit RGBA pixel format will be used which can improve performance on certain devices. Note that if you use bloom or other HDR-based effects, you should enable this HDR option as well.")]
         public bool blurHDR = true;
-        [Tooltip("Enable to use an edge-aware blur.")]
+        [Tooltip("启用以使用边缘感知模糊。Enable to use an edge-aware blur.")]
         public bool blurEdgePreserve = true;
-        [Tooltip("Ignores blur when fog color intensity is below this value.")]
+        [Tooltip("当雾颜色强度低于此值时忽略模糊。Ignores blur when fog color intensity is below this value.")]
         public float blurEdgeDepthThreshold = 0.008f;
         [Range(0, 0.2f)]
         public float ditherStrength;
@@ -180,7 +180,7 @@ namespace VolumetricFogAndMist2 {
         }
 
         /// <summary>
-        /// Creates a new fog volume
+        /// 创建一个新的雾体积。Creates a new fog volume
         /// </summary>
         public static GameObject CreateFogVolume(string name) {
             GameObject go = Resources.Load<GameObject>("Prefabs/FogVolume2D");
@@ -190,7 +190,7 @@ namespace VolumetricFogAndMist2 {
         }
 
         /// <summary>
-        /// Creates a new fog void
+        /// 创建一个新的雾空洞。Creates a new fog void
         /// </summary>
         public static GameObject CreateFogVoid(string name) {
             return new GameObject(name, typeof(FogVoid));
@@ -198,7 +198,7 @@ namespace VolumetricFogAndMist2 {
 
 
         /// <summary>
-        /// Creates a new fog sub-volume
+        /// 创建一个新的雾子体积。Creates a new fog sub-volume
         /// </summary>
         public static GameObject CreateFogSubVolume(string name) {
             GameObject go = Resources.Load<GameObject>("Prefabs/FogSubVolume");

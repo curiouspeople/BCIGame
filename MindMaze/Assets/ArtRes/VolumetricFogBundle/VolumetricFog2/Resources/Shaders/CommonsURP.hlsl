@@ -12,11 +12,11 @@
 
 //#define WEBGL_COMPATIBILITY_MODE
 
-//#define FOG_VOID_ROTATION
+#define FOG_VOID_ROTATION
 
 #define USE_WORLD_SPACE_NOISE
 
-//#define FOG_ROTATION
+#define FOG_ROTATION
 
 //#define FOG_BORDER
 

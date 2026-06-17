@@ -173,7 +173,7 @@ namespace VolumetricFogAndMist2 {
 #endif
 
         /// <summary>
-        /// Updates terrain heightmap on this volumetric fog
+        /// 在此体积雾上更新地形高度图。Updates terrain heightmap on this volumetric fog
         /// </summary>
         public void PerformHeightmapCapture() {
             if (surfaceCam != null) {

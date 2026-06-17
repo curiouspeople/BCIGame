@@ -19,8 +19,8 @@ namespace VolumetricFogAndMist2 {
 
             serializedObject.Update();
 
-            EditorGUILayout.PropertyField(profile);
-            EditorGUILayout.PropertyField(fadeDistance);
+            EditorGUILayout.PropertyField(profile, new GUIContent("Profile 配置文件"));
+            EditorGUILayout.PropertyField(fadeDistance, new GUIContent("Fade Distance 淡入淡出距离"));
 
             serializedObject.ApplyModifiedProperties();
 

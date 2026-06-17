@@ -81,13 +81,13 @@ namespace VolumetricFogAndMist2 {
 
             var pipe = GraphicsSettings.currentRenderPipeline as UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset;
             if (pipe == null) {
-                EditorGUILayout.HelpBox("Universal Rendering Pipeline asset is not set in Project Settings / Graphics !", MessageType.Error);
+                EditorGUILayout.HelpBox("通用渲染管线资源未在项目设置/图形中设置！Universal Rendering Pipeline asset is not set in Project Settings / Graphics !", MessageType.Error);
                 return;
             }
 
             if (!pipe.supportsCameraDepthTexture) {
-                EditorGUILayout.HelpBox("Depth Texture option is required in Universal Rendering Pipeline asset!", MessageType.Error);
-                if (GUILayout.Button("Go to Universal Rendering Pipeline Asset")) {
+                EditorGUILayout.HelpBox("需要在通用渲染管线资源中启用深度纹理选项！Depth Texture option is required in Universal Rendering Pipeline asset!", MessageType.Error);
+                if (GUILayout.Button("Go to Universal Rendering Pipeline Asset 前往通用渲染管线资源")) {
                     Selection.activeObject = pipe;
                 }
                 EditorGUILayout.Separator();
@@ -103,8 +103,8 @@ namespace VolumetricFogAndMist2 {
                 if (depthTextureModeField != null) {
                     int depthTextureMode = (int)depthTextureModeField.GetValue(renderer);
                     if (depthTextureMode == 1) { // transparent copy depth mode
-                        EditorGUILayout.HelpBox("Depth Texture Mode in URP asset must be set to 'After Opaques' or 'Force Prepass'.", MessageType.Warning);
-                        if (GUILayout.Button("Show Pipeline Asset")) {
+                        EditorGUILayout.HelpBox("URP资源中的深度纹理模式必须设置为'After Opaques'或'Force Prepass'。Depth Texture Mode in URP asset must be set to 'After Opaques' or 'Force Prepass'.", MessageType.Warning);
+                        if (GUILayout.Button("Show Pipeline Asset 显示管线资源")) {
                             Selection.activeObject = (Object)renderer;
                             GUIUtility.ExitGUI();
                         }
@@ -121,7 +121,7 @@ namespace VolumetricFogAndMist2 {
             serializedObject.Update();
 
 			EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(profile);
+            EditorGUILayout.PropertyField(profile, new GUIContent("Profile 配置文件"));
 
             if (profile.objectReferenceValue != null) {
                 if (cachedProfile != profile.objectReferenceValue) {
@@ -137,8 +137,8 @@ namespace VolumetricFogAndMist2 {
                 cachedProfileEditor.OnInspectorGUI();
                 EditorGUILayout.EndVertical();
             } else {
-                EditorGUILayout.HelpBox("Create or assign a fog profile.", MessageType.Info);
-                if (GUILayout.Button("New Fog Profile")) {
+                EditorGUILayout.HelpBox("Create or assign a fog profile. 创建或指定一个雾配置文件", MessageType.Info);
+                if (GUILayout.Button("New Fog Profile 新建雾配置")) {
                     CreateFogProfile();
                 }
             }
@@ -149,94 +149,94 @@ namespace VolumetricFogAndMist2 {
             }
 
             EditorGUIUtility.labelWidth = 170;
-            EditorGUILayout.PropertyField(enableNativeLights);
+            EditorGUILayout.PropertyField(enableNativeLights, new GUIContent("Enable Native Lights 启用原生光照"));
             if (enableNativeLights.boolValue) {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(nativeLightsMultiplier, new GUIContent("Intensity Multiplier"));
+                EditorGUILayout.PropertyField(nativeLightsMultiplier, new GUIContent("Intensity Multiplier 强度倍数"));
                 EditorGUI.indentLevel--;
             }
-            EditorGUILayout.PropertyField(enableAPV, new GUIContent("Enable APV (Probe Volumes)"));
+            EditorGUILayout.PropertyField(enableAPV, new GUIContent("Enable APV (Probe Volumes) 启用APV(探针体积)"));
             if (enableAPV.boolValue) {
                 EditorGUI.indentLevel++;
 #if !UNITY_2023_1_OR_NEWER
-                EditorGUILayout.HelpBox("Adaptative Probe Volumes are only available in Unity 2023.", MessageType.Warning);
+                EditorGUILayout.HelpBox("自适应探针体积仅在 Unity 2023 中可用。Adaptative Probe Volumes are only available in Unity 2023.", MessageType.Warning);
 #endif
-                EditorGUILayout.PropertyField(apvIntensityMultiplier, new GUIContent("Intensity Multiplier"));
+                EditorGUILayout.PropertyField(apvIntensityMultiplier, new GUIContent("Intensity Multiplier 强度倍数"));
                 EditorGUI.indentLevel--;
             }
 
             GUI.enabled = !enableNativeLights.boolValue;
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(enablePointLights);
-            if (GUILayout.Button("Point Light Manager", GUILayout.Width(180))) {
+            EditorGUILayout.PropertyField(enablePointLights, new GUIContent("Enable Point Lights 启用点光源"));
+            if (GUILayout.Button("Point Light Manager 点光源管理器", GUILayout.Width(180))) {
                 Selection.activeGameObject = VolumetricFogManager.pointLightManager.gameObject;
             }
             EditorGUILayout.EndHorizontal();
             GUI.enabled = true;
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(enableVoids);
-            if (GUILayout.Button("Void Manager", GUILayout.Width(180))) {
+            EditorGUILayout.PropertyField(enableVoids, new GUIContent("Enable Voids 启用雾空洞"));
+            if (GUILayout.Button("Void Manager 空洞管理器", GUILayout.Width(180))) {
                 Selection.activeGameObject = VolumetricFogManager.fogVoidManager.gameObject;
             }
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.PropertyField(enableFollow);
+            EditorGUILayout.PropertyField(enableFollow, new GUIContent("Enable Follow 启用跟随"));
             if (enableFollow.boolValue) {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(followTarget, new GUIContent("Target"));
-                EditorGUILayout.PropertyField(followMode, new GUIContent("Mode"));
+                EditorGUILayout.PropertyField(followTarget, new GUIContent("Target 目标"));
+                EditorGUILayout.PropertyField(followMode, new GUIContent("Mode 模式"));
                 if ((VolumetricFogFollowMode)followMode.intValue == VolumetricFogFollowMode.FullXYZ) {
-                    EditorGUILayout.PropertyField(followIncludeDistantFog, new GUIContent("Include Distant Fog", "Also adjusts distant fog base altitude to the followed object altitude."));
+                    EditorGUILayout.PropertyField(followIncludeDistantFog, new GUIContent("Include Distant Fog 包含远处雾", "Also adjusts distant fog base altitude to the followed object altitude."));
                 }
-                EditorGUILayout.PropertyField(followOffset, new GUIContent("Offset"));
+                EditorGUILayout.PropertyField(followOffset, new GUIContent("Offset 偏移"));
                 EditorGUI.indentLevel--;
             }
 
-            EditorGUILayout.PropertyField(enableFade);
+            EditorGUILayout.PropertyField(enableFade, new GUIContent("Enable Fade 启用淡入淡出"));
             if (enableFade.boolValue) {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(fadeDistance);
-                EditorGUILayout.PropertyField(fadeOut);
-                EditorGUILayout.PropertyField(fadeController);
+                EditorGUILayout.PropertyField(fadeDistance, new GUIContent("Fade Distance 淡入淡出距离"));
+                EditorGUILayout.PropertyField(fadeOut, new GUIContent("Fade Out 淡出"));
+                EditorGUILayout.PropertyField(fadeController, new GUIContent("Fade Controller 淡入淡出控制器"));
                 EditorGUI.indentLevel--;
             }
-            EditorGUILayout.PropertyField(enableSubVolumes);
+            EditorGUILayout.PropertyField(enableSubVolumes, new GUIContent("Enable Sub Volumes 启用子体积"));
             if (enableSubVolumes.boolValue) {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.HelpBox("If no sub-volumes are specified below, any sub-volume in the scene will be used.", MessageType.Info);
-                EditorGUILayout.PropertyField(fadeController, new GUIContent("Character Controller"));
-                EditorGUILayout.PropertyField(subVolumes);
+                EditorGUILayout.HelpBox("如果下方未指定子体积，将使用场景中的任何子体积。If no sub-volumes are specified below, any sub-volume in the scene will be used.", MessageType.Info);
+                EditorGUILayout.PropertyField(fadeController, new GUIContent("Character Controller 角色控制器"));
+                EditorGUILayout.PropertyField(subVolumes, new GUIContent("Sub Volumes 子体积"));
                 EditorGUI.indentLevel--;
             }
 
             bool requiresFogOfWarTextureReload = false;
-            EditorGUILayout.PropertyField(enableFogOfWar);
+            EditorGUILayout.PropertyField(enableFogOfWar, new GUIContent("Enable Fog Of War 启用战争迷雾"));
             if (enableFogOfWar.boolValue) {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(fogOfWarCenter, new GUIContent("World Center"));
-                EditorGUILayout.PropertyField(fogOfWarIsLocal, new GUIContent("Is Local", "Enable if fog of war center is local to the fog volume"));
-                EditorGUILayout.PropertyField(fogOfWarSize, new GUIContent("World Coverage"));
-                EditorGUILayout.PropertyField(fogOfWarShowCoverage, new GUIContent("Show Coverage Bounds"));
-                EditorGUILayout.PropertyField(fogOfWarTextureWidth, new GUIContent("Texture Width"));
-                EditorGUILayout.PropertyField(fogOfWarTextureHeight, new GUIContent("Texture Height"));
-                EditorGUILayout.PropertyField(fogOfWarRestoreDelay, new GUIContent("Restore Delay"));
-                EditorGUILayout.PropertyField(fogOfWarRestoreDuration, new GUIContent("Restore Duration"));
-                EditorGUILayout.PropertyField(fogOfWarSmoothness, new GUIContent("Border Smoothness"));
-                EditorGUILayout.PropertyField(fogOfWarBlur, new GUIContent("Blur"));
+                EditorGUILayout.PropertyField(fogOfWarCenter, new GUIContent("World Center 世界中心"));
+                EditorGUILayout.PropertyField(fogOfWarIsLocal, new GUIContent("Is Local 局部坐标", "Enable if fog of war center is local to the fog volume"));
+                EditorGUILayout.PropertyField(fogOfWarSize, new GUIContent("World Coverage 世界覆盖范围"));
+                EditorGUILayout.PropertyField(fogOfWarShowCoverage, new GUIContent("Show Coverage Bounds 显示覆盖边界"));
+                EditorGUILayout.PropertyField(fogOfWarTextureWidth, new GUIContent("Texture Width 纹理宽度"));
+                EditorGUILayout.PropertyField(fogOfWarTextureHeight, new GUIContent("Texture Height 纹理高度"));
+                EditorGUILayout.PropertyField(fogOfWarRestoreDelay, new GUIContent("Restore Delay 恢复延迟"));
+                EditorGUILayout.PropertyField(fogOfWarRestoreDuration, new GUIContent("Restore Duration 恢复持续时间"));
+                EditorGUILayout.PropertyField(fogOfWarSmoothness, new GUIContent("Border Smoothness 边界平滑度"));
+                EditorGUILayout.PropertyField(fogOfWarBlur, new GUIContent("Blur 模糊"));
 
                 EditorGUILayout.Separator();
-                EditorGUILayout.PropertyField(maskEditorEnabled, new GUIContent("Fog Of War Editor", "Activates terrain brush to paint/remove fog of war at custom locations."));
+                EditorGUILayout.PropertyField(maskEditorEnabled, new GUIContent("Fog Of War Editor 战争迷雾编辑器", "Activates terrain brush to paint/remove fog of war at custom locations."));
 
                 if (maskEditorEnabled.boolValue) {
-                    if (GUILayout.Button("Create New Mask Texture")) {
-                        if (EditorUtility.DisplayDialog("Create Mask Texture", "A texture asset will be created with the size specified in current profile (" + fog.fogOfWarTextureWidth + "x" + fog.fogOfWarTextureHeight + ").\n\nContinue?", "Ok", "Cancel")) {
+                    if (GUILayout.Button("Create New Mask Texture 创建新遮罩纹理")) {
+                        if (EditorUtility.DisplayDialog("Create Mask Texture 创建遮罩纹理", "A texture asset will be created with the size specified in current profile (" + fog.fogOfWarTextureWidth + "x" + fog.fogOfWarTextureHeight + ").\n\nContinue?", "Ok", "Cancel")) {
                             CreateNewMaskTexture();
                             GUIUtility.ExitGUI();
                         }
                     }
                     EditorGUI.BeginChangeCheck();
-                    fog.fogOfWarTexture = (Texture2D)EditorGUILayout.ObjectField(new GUIContent("Coverage Texture", "Fog of war coverage mask. A value of alpha of zero means no fog."), fog.fogOfWarTexture, typeof(Texture2D), false);
+                    fog.fogOfWarTexture = (Texture2D)EditorGUILayout.ObjectField(new GUIContent("Coverage Texture 覆盖纹理", "Fog of war coverage mask. A value of alpha of zero means no fog."), fog.fogOfWarTexture, typeof(Texture2D), false);
                     Texture2D tex = fog.fogOfWarTexture;
                     if (EditorGUI.EndChangeCheck()) {
                         requiresFogOfWarTextureReload = true;
@@ -278,24 +278,24 @@ namespace VolumetricFogAndMist2 {
                         EditorGUILayout.Separator();
                         EditorGUILayout.BeginVertical(GUI.skin.box);
                         EditorGUILayout.BeginHorizontal();
-                        EditorGUILayout.PropertyField(maskBrushMode, new GUIContent("Brush Mode", "Select brush operation mode."));
-                        if (GUILayout.Button("Toggle", GUILayout.Width(70))) {
+                        EditorGUILayout.PropertyField(maskBrushMode, new GUIContent("Brush Mode 笔刷模式", "Select brush operation mode."));
+                        if (GUILayout.Button("Toggle 切换", GUILayout.Width(70))) {
                             maskBrushMode.intValue = maskBrushMode.intValue == 0 ? 1 : 0;
                         }
                         EditorGUILayout.EndHorizontal();
                         if (maskBrushMode.intValue == (int)MaskTextureBrushMode.ColorFog) {
-                            EditorGUILayout.PropertyField(maskBrushColor, new GUIContent("   Color", "Brush color."));
+                            EditorGUILayout.PropertyField(maskBrushColor, new GUIContent("   Color 颜色", "Brush color."));
                         }
-                        EditorGUILayout.PropertyField(maskBrushWidth, new GUIContent("   Width", "Width of the snow editor brush."));
-                        EditorGUILayout.PropertyField(maskBrushFuzziness, new GUIContent("   Fuzziness", "Solid vs spray brush."));
-                        EditorGUILayout.PropertyField(maskBrushOpacity, new GUIContent("   Opacity", "Stroke opacity."));
+                        EditorGUILayout.PropertyField(maskBrushWidth, new GUIContent("   Width 宽度", "Width of the snow editor brush."));
+                        EditorGUILayout.PropertyField(maskBrushFuzziness, new GUIContent("   Fuzziness 模糊度", "Solid vs spray brush."));
+                        EditorGUILayout.PropertyField(maskBrushOpacity, new GUIContent("   Opacity 不透明度", "Stroke opacity."));
                         EditorGUILayout.BeginHorizontal();
                         if (tex == null) GUI.enabled = false;
-                        if (GUILayout.Button("Fill Mask")) {
+                        if (GUILayout.Button("Fill Mask 填充遮罩")) {
                             fog.ResetFogOfWar(1f);
                             maskBrushMode.intValue = (int)MaskTextureBrushMode.RemoveFog;
                         }
-                        if (GUILayout.Button("Clear Mask")) {
+                        if (GUILayout.Button("Clear Mask 清除遮罩")) {
                             fog.ResetFogOfWar(0);
                             maskBrushMode.intValue = (int)MaskTextureBrushMode.AddFog;
                         }
@@ -308,21 +308,21 @@ namespace VolumetricFogAndMist2 {
                 EditorGUI.indentLevel--;
             }
 
-            EditorGUILayout.PropertyField(enableUpdateModeOptions);
+            EditorGUILayout.PropertyField(enableUpdateModeOptions, new GUIContent("Enable Update Mode Options 启用更新模式选项"));
             if (enableUpdateModeOptions.boolValue) {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(updateMode);
-                EditorGUILayout.PropertyField(updateModeCamera, new GUIContent("Camera"));
+                EditorGUILayout.PropertyField(updateMode, new GUIContent("Update Mode 更新模式"));
+                EditorGUILayout.PropertyField(updateModeCamera, new GUIContent("Camera 相机"));
                 if (updateMode.intValue == (int)VolumetricFogUpdateMode.WhenCameraIsInsideArea) {
-                    EditorGUILayout.PropertyField(updateModeBounds, new GUIContent("Bounds"));
+                    EditorGUILayout.PropertyField(updateModeBounds, new GUIContent("Bounds 边界"));
                 }
                 EditorGUI.indentLevel--;
             }
 
-            EditorGUILayout.PropertyField(showBoundary);
+            EditorGUILayout.PropertyField(showBoundary, new GUIContent("Show Boundary 显示边界"));
 
             EditorGUILayout.Separator();
-            if (GUILayout.Button("Show Volumetric Fog Manager Settings")) {
+            if (GUILayout.Button("Show Volumetric Fog Manager Settings 显示体积雾管理器设置")) {
                 Selection.activeObject = VolumetricFogManager.instance;
             }
 
